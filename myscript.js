@@ -1,4 +1,3 @@
-
 function showGradeMenu() {
 	var x = document.getElementById("gradeMenu");
 	x.style.display = "block";
@@ -20,11 +19,7 @@ window.onload = function() {
 	showChosenGrade();
 };
 
-
-
-//LIGHTBOX STUFF:
-
-// initialize hidden elements
+// initialize hidden elements of lightbox
 window.onload = function (){
 	document.getElementById("positionBigImage").style.display = "none";
 	document.getElementById("lightbox").style.display = "none";
@@ -43,8 +38,8 @@ function changeVisibility(divID) {
 } // changeVisibility
 
 // global variables
-let jsondata;
-let currentUid;
+let jsondata; // array of profiles currently being displayed on the screen
+let currentUid; // uid of profile currently displayed in lightbox
 
 // display lightbox with big image in it
 function displayLightBox(alt, imageFile) {
@@ -63,7 +58,7 @@ function displayLightBox(alt, imageFile) {
   
   // get json data for uid
   if (imageFile != "") {
-	  fetch ("http://142.31.53.220/~the/rambook/getData.php?uid=" + requestedUid)
+	  fetch ("http://142.31.53.220/~emily/rambook6/getData.php?uid=" + requestedUid)
 	    .then(response => response.json())
 		.then(data => updateContents(data))
 		.catch(err => console.log("error occured" + err));
@@ -92,11 +87,13 @@ function displayLightBox(alt, imageFile) {
   changeVisibility('positionBigImage'); 
 }
 
+// display user's name, grade, description, ect. under big image in lightbox
 function updateContents(data) {
 	console.log(data);
 	document.getElementById("text").innerHTML = "Name: " + data.name + "<br>Connection to MD: " + data.connection + "<br>Grade: " + data.grade + "<br>Description: " + data.desc;
 }
 
+// sorts list of profiles by uid
 function sortByUID() {
 	return function(a, b) {
 		if (a["uid"] > b["uid"]) {
@@ -116,6 +113,7 @@ function loadImages(access){
     .then(function(data){
       console.log(data); 
 	  
+	  // everything beyond this point can be turned into a method probably
       let i;  // counter     
       let main = document.getElementById("main");
       
@@ -145,10 +143,11 @@ function loadImages(access){
     });
 } // loadImages
 
+// display the next image (of images currently displayed) in the lightbox
 function goToNextImage(direction) {
 	
-	let current;
-	let i;
+	let current; // index of current image being displayed (changes)
+	let i; // counter
 	
 	for (i in jsondata) {
 		if (jsondata[i].uid == currentUid) {
@@ -157,13 +156,10 @@ function goToNextImage(direction) {
 		}
 	}
 	
-	console.log("current: " + current);
-	// 1 means right, 0 means left
-
+	// logic based on direction - 1 means right, 0 means left
 	if (direction == 1) {
 		current++;
 		if (current < jsondata.length) {
-			console.log("this code is running r " + current);
 			displayLightBox('','');
 			displayLightBox('alt', jsondata[current].uid + "." + jsondata[current].imagetype);
 			currentUid = jsondata[current].uid;
@@ -171,7 +167,6 @@ function goToNextImage(direction) {
 	} else {
 		current--;
 		if (current > -1) {
-			console.log("this code is running l " + current);
 			displayLightBox('','');
 			displayLightBox('alt', jsondata[current].uid + "." + jsondata[current].imagetype);
 			currentUid = jsondata[current].uid;
@@ -183,14 +178,19 @@ window.onload = function() {
 	loadImages("all");
 }
 
-//ASK ABOUT CASE SENSITIVITYY
 const searchbar = document.getElementById("searchbar");
+
+// when search is submitted, execute code to search profiles
 searchbar.addEventListener('submit', event => {
 	event.preventDefault();
 	searchProfiles(document.getElementById("search").value);
 })
 
+// searches profiles based on terms in a string
 function searchProfiles(term) {
+	
+	// convert terms string into a string that can be passed into a url
+	// note: should add more validation
 	const termsArray = term.split(" ");
 	let termsUrl = "";
 	for (let i = 0; i < termsArray.length; i++) {
@@ -207,6 +207,7 @@ function searchProfiles(term) {
     .then(function(data){
       console.log(data); 
 	  
+	  // everything beyond this point can be turned into a method probably
       let i;  // counter     
       let main = document.getElementById("main");
 	  let message = document.getElementById("message");
@@ -221,6 +222,9 @@ function searchProfiles(term) {
 	 
 	  // save data into global array
 	  jsondata = data;
+	  
+	  // if profiles are returned from the search, display them 
+	  // otherwise, display message saying that no results were returned
 	  if (data.length != 0) {
 		for (i in data){
 			let img = new Image();
