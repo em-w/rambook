@@ -58,7 +58,7 @@ function displayLightBox(alt, imageFile) {
   
   // get json data for uid
   if (imageFile != "") {
-	  fetch ("http://142.31.53.220/~emily/rambook6/getData.php?uid=" + requestedUid)
+	  fetch ("http://142.31.53.220/~the/rambook/getData.php?uid=" + requestedUid)
 	    .then(response => response.json())
 		.then(data => updateContents(data))
 		.catch(err => console.log("error occured" + err));
