@@ -1,3 +1,6 @@
+<?php
+	session_start();
+?>
 <!<!DOCTYPE html>
   <html lang="en">
   <head>
@@ -14,7 +17,7 @@
   <body>
   
   <h1>Welcome to RamBook!</h1>
-  
+  <a href="?page=login">log in</a>&nbsp;&nbsp;<a href="?page=signup">sign up</a>
   <ul>
 	<li><a href="?page=home">view profiles</a></li>
 	<li><a href="?page=form">add profile</a></li>

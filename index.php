@@ -1,7 +1,13 @@
 <?php
+
+// temp
+$credentials = [
+    'username' => 'username', 
+    'password' => 'password' 
+];
 	
-	$name = $desc = $agreement = $connection = $grade = "";
-	$nameErr = $descErr = $agreeErr = $connErr = $pfpErr = "";
+	$name = $desc = $agreement = $connection = $grade = $username = $password = "";
+	$nameErr = $descErr = $agreeErr = $connErr = $pfpErr = $userErr = $pwdErr = "";
 	
 	$error = false;	
 	
@@ -11,127 +17,194 @@
 	
 	include "createthumbnail.php";
 
-	// if form was submitted, validate data
+	include "header.inc";
+
+	// if a form was submitted, validate data
 	if ($_SERVER["REQUEST_METHOD"] === "POST") {
-
-		if (empty($_POST["name"])) {
-			$nameErr = "Name required.";
-			$error = true;
-		} else {
-			$name = format_input($_POST["name"]);
-			if (!preg_match("/^[a-zA-Z-' ]*$/", $name)) {
-				$nameErr = "Letters and whitespace only, please.";
-				$error = true;
+		
+		// if login form is submitted
+		if (isset($_POST["login"])) {
+			$successful = false;
+			if (file_exists($file)) {
+				$jsonstring = file_get_contents($file);
+				
+				// decode json string into php array
+				$userprofiles = json_decode($jsonstring, true);
 			}
-		} // else	
+			foreach ($userprofiles as $user) {
+				if ($user["username"] == $_POST["username"] && $user["password"] == $_POST["password"]) {
+					$_SESSION["loggedIn"] = 1;
+					$successful = true;
+				}
+			}
+
+			if (!$successful) {
+				echo "username or password incorrect";
+			}
+
 		
-		if (empty($_POST["desc"])) {
-			$descErr = "Description required.";
-			$error = true;
-		} else {
-			$desc = format_input($_POST["desc"]);
-		} // else
+		// if old rambook form is submitted (change to post code)
+		} else if (isset($_POST["form"])) {
 		
-		if (empty($_POST["connection"])) {
-			$connErr = "Please select an option.";
-			$error = true;
-		} else {
-			$connection = $_POST["connection"];
-			if ($_POST["connection"] == "student") {
-				$grade = $_POST["grade"];
+		// if logout button is pressed
+		} else if (isset($_POST["logout"])) {
+			session_unset();
+			session_destroy();
+		
+		// if signup form is submitted
+		} else if (isset($_POST["signup"])) {
+			if (empty($_POST["name"])) {
+				$nameErr = "Name required.";
+				$error = true;
 			} else {
-				$_POST["grade"] = "NA";
-			}
-		} // else
-		
-		if (empty($_POST["agreement"])) {
-			$agreeErr = "Please check.";
-			$error = true;
-		} else {
-			$agreement = $_POST["agreement"];
-		} // else
-		
-		if (empty($_FILES["pfp"]["name"])) {
-			$pfpErr = "Please upload a profile photo.";
-			$error = true;
-		} else {
-			// setting file-related variables if file is uploaded
-			$uid = file_get_contents("identifier.txt");
-			$targetFile = $targetDir . basename($_FILES["pfp"]["name"]);
-			$imageFileType = strtolower(pathinfo($targetFile, PATHINFO_EXTENSION));
+				$name = format_input($_POST["name"]);
+				if (!preg_match("/^[a-zA-Z-' ]*$/", $name)) {
+					$nameErr = "Letters and whitespace only, please.";
+					$error = true;
+				}
+			} // else	
 			
-			// rename target file to uid
-			$targetFile = $targetDir . $uid . "." . $imageFileType;
+			if (empty($_POST["desc"])) {
+				$descErr = "Description required.";
+				$error = true;
+			} else {
+				$desc = format_input($_POST["desc"]);
+			} // else
+			
+			if (empty($_POST["username"])) {
+				$userErr = "Username required.";
+				$error = true;
+			} else { // add error checking for alphanumerical characters only + no whitespace !
+				$username = format_input($_POST["username"]);
+			} // else
 
-			// check if file is an image
-			$check = exif_imagetype($_FILES["pfp"]["tmp_name"]);
+			if (empty($_POST["password"])) {
+				$pwdErr = "Password required.";
+				$error = true;
+			} else {
+				$password = format_input($_POST["password"]);
+			} // else
+
+			if (empty($_POST["connection"])) {
+				$connErr = "Please select an option.";
+				$error = true;
+			} else {
+				$connection = $_POST["connection"];
+				if ($_POST["connection"] == "student") {
+					$grade = $_POST["grade"];
+				} else {
+					$_POST["grade"] = "NA";
+				}
+			} // else
 			
-			if (!($check !== false)) {
-				$pfpErr = "File is not an image.";
+			if (empty($_POST["agreement"])) {
+				$agreeErr = "Please check.";
 				$error = true;
-				
-			// check if file already exists
-			} else if (file_exists($targetFile)) {
-				$pfpErr = "Image already exists.";
+			} else {
+				$agreement = $_POST["agreement"];
+			} // else
+			
+			if (empty($_FILES["pfp"]["name"])) {
+				$pfpErr = "Please upload a profile photo.";
 				$error = true;
+			} else {
+				// setting file-related variables if file is uploaded
+				$uid = file_get_contents("identifier.txt");
+				$targetFile = $targetDir . basename($_FILES["pfp"]["name"]);
+				$imageFileType = strtolower(pathinfo($targetFile, PATHINFO_EXTENSION));
 				
-			// check if file is too large
-			} else if ($_FILES["pfp"]["size"] > 4000000) {
-				$pfpErr = "Sorry, your file is too large. All files must be under 4MB.";
-				$error = true;
+				// rename target file to uid
+				$targetFile = $targetDir . $uid . "." . $imageFileType;
+
+				// check if file is an image
+				$check = exif_imagetype($_FILES["pfp"]["tmp_name"]);
 				
-			// check if file is a valid image type
-			} else if ($imageFileType !== "jpg" && $imageFileType !== "png" && $imageFileType !== "jpeg" && $imageFileType !== "gif") {
-				$pfpErr = "Sorry, only .jpg, .jpeg, .png, and .gif files are allowed.";
-				$error = true;
-				
-			}
-		} // else
-		
+				if (!($check !== false)) {
+					$pfpErr = "File is not an image.";
+					$error = true;
+					
+				// check if file already exists
+				} else if (file_exists($targetFile)) {
+					$pfpErr = "Image already exists.";
+					$error = true;
+					
+				// check if file is too large
+				} else if ($_FILES["pfp"]["size"] > 4000000) {
+					$pfpErr = "Sorry, your file is too large. All files must be under 4MB.";
+					$error = true;
+					
+				// check if file is a valid image type
+				} else if ($imageFileType !== "jpg" && $imageFileType !== "png" && $imageFileType !== "jpeg" && $imageFileType !== "gif") {
+					$pfpErr = "Sorry, only .jpg, .jpeg, .png, and .gif files are allowed.";
+					$error = true;
+					
+				}
+			} // else
+		}
 	} // if
 	
-	include "header.inc";	
-	
-	// if form was submitted successfully
-	if ($_SERVER["REQUEST_METHOD"] == "POST" && !$error) {	
-		
-		$_POST["uid"] = $uid;
-		$_POST["imagetype"] = $imageFileType;
-		write_data_to_file($file);
-		upload_pfp($targetDir, $targetFile);
-		
-		file_put_contents("identifier.txt", ($uid + 1));
-		if (!is_dir("thumbnails/")) {
-			mkdir("thumbnails/", 0755);
+	// display login or signup if user is not logged in, store data if user signs up
+	if (!isset($_SESSION["loggedIn"])) {
+		if (isset($_GET["page"])) {
+			if ($_GET["page"] == "signup") {
+				include "signupform.inc";
+			} else {
+				include "loginform.inc";
+			}
+
+		// if signup form was submitted successfully
+		} else if (isset($_POST["signup"]) && !$error) {
+			$_POST["uid"] = $uid;
+			$_POST["imagetype"] = $imageFileType;
+			write_data_to_file($file);
+			upload_pfp($targetDir, $targetFile);
+			
+			file_put_contents("identifier.txt", ($uid + 1));
+			if (!is_dir("thumbnails/")) {
+				mkdir("thumbnails/", 0755);
+			}
+			$dest = "thumbnails/" . $uid . "." . $imageFileType;
+			
+			if (!file_exists($dest)) {
+				createThumbnail($targetFile, $dest, 200, 200);	
+			}
+			
+
 		}
-		$dest = "thumbnails/" . $uid . "." . $imageFileType;
-		
-		if (!file_exists($dest)) {
-			createThumbnail($targetFile, $dest, 200, 200);	
+		else {
+			include "loginform.inc";
 		}
 		
-		include "home.inc";
-		
-	} else if ($error || (isset($_GET["page"]) && $_GET["page"] == "form")) {
-		include "form.inc";
 	} else {
-		include "home.inc";
-	} // else
-	
-	if (isset($_GET["action"]) && $_GET["action"] == "del") {
-		if (file_exists($file)) {
-			unlink($file);
-		}
-		if (is_dir($targetDir)) {
-			delete_images($targetDir);
-		}
-		if (is_dir("thumbnails/")) {
-			delete_images("thumbnails/");
-		}
-		file_put_contents("identifier.txt", 1);
+		// if form was submitted successfully
+		if (isset($_POST["form"]) && !$error) {	
 		
-	} // if
+			include "home.inc";
+			
+		} else if ($error || (isset($_GET["page"]) && $_GET["page"] == "form")) {
+			include "form.inc";
+		} else {
+			include "home.inc";
+		} // else
+		
+		if (isset($_GET["action"]) && $_GET["action"] == "del") {
+			if (file_exists($file)) {
+				unlink($file);
+			}
+			if (is_dir($targetDir)) {
+				delete_images($targetDir);
+			}
+			if (is_dir("thumbnails/")) {
+				delete_images("thumbnails/");
+			}
+			file_put_contents("identifier.txt", 1);
+			
+		} // if
 
+		include "logout.inc";
+
+	}
+	
 	include "footer.inc";
 
 	function format_input($input) {
