@@ -8,11 +8,14 @@ $credentials = [
 	
 	$name = $desc = $agreement = $connection = $grade = $username = $password = "";
 	$nameErr = $descErr = $agreeErr = $connErr = $pfpErr = $userErr = $pwdErr = "";
+
+	$uid = $imageFileType = "";
 	
 	$error = false;	
 	
 	$file = "userprofiles.json"; // json file for storing user data
 	$targetDir = "profileimages/"; // directory for storing pfps
+	$postDir = "postimages/"; // directory for storing posts
 	$uid = 0;
 	
 	include "createthumbnail.php";
@@ -30,11 +33,14 @@ $credentials = [
 				
 				// decode json string into php array
 				$userprofiles = json_decode($jsonstring, true);
-			}
-			foreach ($userprofiles as $user) {
-				if ($user["username"] == $_POST["username"] && $user["password"] == $_POST["password"]) {
-					$_SESSION["loggedIn"] = 1;
-					$successful = true;
+
+				foreach ($userprofiles as $user) {
+					if ($user["username"] == $_POST["username"] && $user["password"] == $_POST["password"]) {
+						$_SESSION["loggedIn"] = 1;
+						$_SESSION["userUid"] = $user["uid"];
+						$_SESSION["userFile"] = $user["uid"] . ".json";
+						$successful = true;
+					}
 				}
 			}
 
@@ -43,9 +49,59 @@ $credentials = [
 			}
 
 		
-		// if old rambook form is submitted (change to post code)
+		// if post upload form is submitted
 		} else if (isset($_POST["form"])) {
-		
+			if (empty($_POST["desc"])) {
+				$descErr = "Description required.";
+				$error = true;
+			} else {
+				$desc = format_input($_POST["desc"]);
+			} 	
+
+			if (empty($_POST["agreement"])) {
+				$agreeErr = "Please check.";
+				$error = true;
+			} else {
+				$agreement = $_POST["agreement"];
+			} // else
+
+			if (empty($_FILES["image"]["name"])) {
+				$pfpErr = "Please upload a profile photo.";
+				$error = true;
+			} else {
+				// setting file-related variables if file is uploaded
+				$uid = file_get_contents("postid.txt");
+				$targetFile = $postDir . basename($_FILES["image"]["name"]);
+				$imageFileType = strtolower(pathinfo($targetFile, PATHINFO_EXTENSION));
+				
+				// rename target file to uid
+				$targetFile = $postDir . $uid . "." . $imageFileType;
+
+				// check if file is an image
+				$check = exif_imagetype($_FILES["image"]["tmp_name"]);
+				
+				if (!($check !== false)) {
+					$pfpErr = "File is not an image.";
+					$error = true;
+					
+				// check if file already exists
+				} else if (file_exists($targetFile)) {
+					$pfpErr = "Image already exists.";
+					$error = true;
+					
+				// check if file is too large
+				} else if ($_FILES["image"]["size"] > 4000000) {
+					$pfpErr = "Sorry, your file is too large. All files must be under 4MB.";
+					$error = true;
+					
+				// check if file is a valid image type
+				} else if ($imageFileType !== "jpg" && $imageFileType !== "png" && $imageFileType !== "jpeg" && $imageFileType !== "gif") {
+					$pfpErr = "Sorry, only .jpg, .jpeg, .png, and .gif files are allowed.";
+					$error = true;
+					
+				}
+			} // else
+
 		// if logout button is pressed
 		} else if (isset($_POST["logout"])) {
 			session_unset();
@@ -104,20 +160,20 @@ $credentials = [
 				$agreement = $_POST["agreement"];
 			} // else
 			
-			if (empty($_FILES["pfp"]["name"])) {
+			if (empty($_FILES["image"]["name"])) {
 				$pfpErr = "Please upload a profile photo.";
 				$error = true;
 			} else {
 				// setting file-related variables if file is uploaded
 				$uid = file_get_contents("identifier.txt");
-				$targetFile = $targetDir . basename($_FILES["pfp"]["name"]);
+				$targetFile = $targetDir . basename($_FILES["image"]["name"]);
 				$imageFileType = strtolower(pathinfo($targetFile, PATHINFO_EXTENSION));
 				
 				// rename target file to uid
 				$targetFile = $targetDir . $uid . "." . $imageFileType;
 
 				// check if file is an image
-				$check = exif_imagetype($_FILES["pfp"]["tmp_name"]);
+				$check = exif_imagetype($_FILES["image"]["tmp_name"]);
 				
 				if (!($check !== false)) {
 					$pfpErr = "File is not an image.";
@@ -129,7 +185,7 @@ $credentials = [
 					$error = true;
 					
 				// check if file is too large
-				} else if ($_FILES["pfp"]["size"] > 4000000) {
+				} else if ($_FILES["image"]["size"] > 4000000) {
 					$pfpErr = "Sorry, your file is too large. All files must be under 4MB.";
 					$error = true;
 					
@@ -160,15 +216,17 @@ $credentials = [
 			upload_pfp($targetDir, $targetFile);
 			
 			file_put_contents("identifier.txt", ($uid + 1));
-			if (!is_dir("thumbnails/")) {
-				mkdir("thumbnails/", 0755);
+			
+			if (!is_dir("pfpthumbs/")) {
+				mkdir("pfpthumbs/", 0755);
 			}
-			$dest = "thumbnails/" . $uid . "." . $imageFileType;
+			$dest = "pfpthumbs/" . $uid . "." . $imageFileType;
 			
 			if (!file_exists($dest)) {
 				createThumbnail($targetFile, $dest, 200, 200);	
 			}
 			
+			include "loginform.inc";
 
 		}
 		else {
@@ -178,8 +236,23 @@ $credentials = [
 	} else {
 		// if form was submitted successfully
 		if (isset($_POST["form"]) && !$error) {	
-		
+			$_POST["uid"] = $uid;
+			$_POST["imagetype"] = $imageFileType;
+
+			write_data_to_file($_SESSION["userFile"]);
+			upload_pfp($postDir, $targetFile);
+
+			file_put_contents("postid.txt", $uid + 1);
 			include "home.inc";
+
+			if (!is_dir("thumbnails/")) {
+				mkdir("thumbnails/", 0755);
+			}
+			$dest = "thumbnails/" . $uid . "." . $imageFileType;
+			
+			if (!file_exists($dest)) {
+				createThumbnail($targetFile, $dest, 200, 200);	
+			}
 			
 		} else if ($error || (isset($_GET["page"]) && $_GET["page"] == "form")) {
 			include "form.inc";
@@ -189,15 +262,41 @@ $credentials = [
 		
 		if (isset($_GET["action"]) && $_GET["action"] == "del") {
 			if (file_exists($file)) {
+				$jsonstring = file_get_contents($file);
+				
+				// decode json string into php array
+				$userprofiles = json_decode($jsonstring, true);
+
+				foreach ($userprofiles as $user) {
+					$userFile = ($user["uid"] . ".json");
+					echo $userFile;
+					echo "hi";
+					if (file_exists($userFile)) {
+						unlink($userFile);
+					}
+				}
+
 				unlink($file);
 			}
+
+			if (is_dir($postDir)) {
+				delete_images($postDir);
+			}
+
 			if (is_dir($targetDir)) {
 				delete_images($targetDir);
 			}
+
 			if (is_dir("thumbnails/")) {
 				delete_images("thumbnails/");
 			}
+
+			if (is_dir("pfpthumbs/")) {
+				delete_images("pfpthumbs/");
+			}
+
 			file_put_contents("identifier.txt", 1);
+			file_put_contents("postid.txt", 1);
 			
 		} // if
 
@@ -239,7 +338,7 @@ $credentials = [
 		}
 		
 		// upload the image file
-		move_uploaded_file($_FILES["pfp"]["tmp_name"], $targetFile);
+		move_uploaded_file($_FILES["image"]["tmp_name"], $targetFile);
 		
 		// replace the uploaded files with resized ones, if needed..?
 		createThumbnail($targetFile, $targetFile, 500, 500);

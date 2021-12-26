@@ -19,8 +19,8 @@
   <h1>Welcome to RamBook!</h1>
   <a href="?page=login">log in</a>&nbsp;&nbsp;<a href="?page=signup">sign up</a>
   <ul>
-	<li><a href="?page=home">view profiles</a></li>
-	<li><a href="?page=form">add profile</a></li>
+	<li><a href="?page=home">view posts</a></li>
+	<li><a href="?page=form">add post</a></li>
 	<li><a href="?action=del">reset gallery</a></li>
 	<li><a href="downloadall.php">download all</a></li>
   </ul>

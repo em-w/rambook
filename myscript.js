@@ -58,14 +58,14 @@ function displayLightBox(alt, imageFile) {
   
   // get json data for uid
   if (imageFile != "") {
-	  fetch ("http://142.31.53.220/~the/rambook/getData.php?uid=" + requestedUid)
+	  fetch ("./getData.php?uid=" + requestedUid)
 	    .then(response => response.json())
 		.then(data => updateContents(data))
 		.catch(err => console.log("error occured" + err));
   }
   
   // update big image to access
-  image.src = "profileimages/" + imageFile;
+  image.src = "postimages/" + imageFile;
   image.alt = alt;	
   
   // update download link
@@ -90,7 +90,7 @@ function displayLightBox(alt, imageFile) {
 // display user's name, grade, description, ect. under big image in lightbox
 function updateContents(data) {
 	console.log(data);
-	document.getElementById("text").innerHTML = "Name: " + data.name + "<br>Connection to MD: " + data.connection + "<br>Grade: " + data.grade + "<br>Description: " + data.desc;
+	document.getElementById("text").innerHTML = "Posted by: " + data.author + "<br><br>" + data.desc;
 }
 
 // sorts list of profiles by uid
@@ -104,7 +104,7 @@ function sortByUID() {
 	}
 }
 
-// load "all", "student", "alumnus", or "staff" images only
+// load all posts or users's posts only
 function loadImages(access){
     fetch("./readjson.php?access=" + access).
     then(function(resp){ 

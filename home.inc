@@ -1,8 +1,9 @@
 <div id="viewmenu">
-	<div onclick="loadImages('all')" class="viewbutton">show all profiles</div>
-    <div onclick="loadImages('student')" class="viewbutton">show student profiles only</div>
-    <div onclick="loadImages('alumnus')" class="viewbutton">show alumnus profiles only</div>
-	<div onclick="loadImages('staff')" class="viewbutton">show staff profiles only</div>
+	<div onclick="loadImages('all')" class="viewbutton">show all posts</div>
+	<div onclick="loadImages('self')" class="viewbutton">my posts</div>
+    <!-- <div onclick="loadImages('student')" class="viewbutton">show student profiles only</div> -->
+    <!-- <div onclick="loadImages('alumnus')" class="viewbutton">show alumnus profiles only</div> -->
+	<!-- <div onclick="loadImages('staff')" class="viewbutton">show staff profiles only</div> -->
 </div>
 
 <form id="searchbar">

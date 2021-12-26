@@ -1,10 +1,13 @@
 <?php
+session_start();
 
  // read json file into array of strings
  $jsonstring = file_get_contents("userprofiles.json");
  
  // save the json data as a PHP array
- $phparray = json_decode($jsonstring, true);
+ $userarray = json_decode($jsonstring, true);
+
+ $userstring = "";
  
  // use GET to determine type of access
  if (isset($_GET["access"])){
@@ -16,14 +19,25 @@
   // pull student, alumnus or staff only or return all
   $returnData = [];
   if ($access != "all") { 
-   foreach($phparray as $entry) {
-    // var_dump($entry);
+      if ($access == "self") {
+         $userstring = file_get_contents($_SESSION["userUid"] . ".json");
+         $returnData = json_decode($userstring);
+      }
+
+   /*foreach($phparray as $entry) {
       if ($entry["connection"] == $access) {
          $returnData[] = $entry;  
       }      
-   } // foreach
+   } // foreach */
+
   } else {
-     $returnData = $phparray;
+      foreach ($userarray as $user) {
+         $userstring = file_get_contents($user["uid"] . ".json");
+         $userposts = json_decode($userstring, true);
+         foreach ($userposts as $post) {
+            $returnData[] = $post;
+         } // this probably isn't the besk method, ask about merging arrays
+      }
   }
 
 // encode the php array to json 
