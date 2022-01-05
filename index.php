@@ -215,6 +215,9 @@ $credentials = [
 			write_data_to_file($file);
 			upload_pfp($targetDir, $targetFile);
 			
+			//creating user's .json file
+			file_put_contents($uid . ".json", "");
+
 			file_put_contents("identifier.txt", ($uid + 1));
 			
 			if (!is_dir("pfpthumbs/")) {
