@@ -180,11 +180,14 @@ window.onload = function() {
 
 const searchbar = document.getElementById("searchbar");
 
-// when search is submitted, execute code to search profiles
-searchbar.addEventListener('submit', event => {
-	event.preventDefault();
-	searchProfiles(document.getElementById("search").value);
-})
+if (searchbar != null) {
+	// when search is submitted, execute code to search profiles
+	searchbar.addEventListener('submit', event => {
+		event.preventDefault();
+		searchProfiles(document.getElementById("search").value);
+	})
+} // if
+
 
 // searches profiles based on terms in a string
 function searchProfiles(term) {
