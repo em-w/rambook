@@ -25,6 +25,15 @@ window.onload = function (){
 	document.getElementById("lightbox").style.display = "none";
 };
 
+//Onchange of upload, get temp url and create an image
+function previewImg () {
+	const [imgFile] = document.getElementById("image").files;
+	console.log(imgFile);
+	if (imgFile) {
+		document.getElementById("preview").src = URL.createObjectURL(imgFile);
+	}
+}
+
 // change the visibility of ID
 function changeVisibility(divID) {
   var element = document.getElementById(divID);
@@ -176,7 +185,7 @@ function goToNextImage(direction) {
 
 window.onload = function() {
 	loadImages("all");
-}
+};
 
 const searchbar = document.getElementById("searchbar");
 

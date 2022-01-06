@@ -12,7 +12,8 @@
 	<input type="text" id="name" name="name" value="<?php echo $name; ?>"> <span class = "error"> * <?php echo $nameErr; ?></span><br><br>	
    
 	<label for="image">Profile Pic: </label>
-	<input type="file" id="image" name="image" class="button"> <span class="error"> * <?php echo $pfpErr; ?></span> <br><br>
+	<input type="file" id="image" name="image" class="button" onchange="previewImg()"> <span class="error"> * <?php echo $pfpErr; ?></span> <br>
+	<img id="preview"><br><br>
 	
     <input type="checkbox" id="agreement" name="agreement" <?php if ($agreement != "") echo "checked"; ?>> 
 	
