@@ -63,13 +63,12 @@ function displayLightBox(alt, imageFile) {
 
   // save uid into global variable
   currentUid = requestedUid;
-  console.log(requestedUid);
   
   // get json data for uid
   if (imageFile != "") {
 	  fetch ("./getData.php?uid=" + requestedUid)
 	    .then(response => response.json())
-		.then(data => updateContents(data))
+		.then(data => updatePostContents(data))
 		.catch(err => console.log("error occured" + err));
   }
   
@@ -97,10 +96,12 @@ function displayLightBox(alt, imageFile) {
 }
 
 // display user's name, grade, description, ect. under big image in lightbox
-function updateContents(data) {
+function updatePostContents(data) {
 	console.log(data);
 	document.getElementById("text").innerHTML = "Posted by: " + data.author + "<br><br>" + data.desc;
 }
+
+
 
 // sorts list of profiles by uid
 function sortByUID() {
@@ -114,7 +115,15 @@ function sortByUID() {
 }
 
 // load all posts or users's posts only
-function loadImages(access){
+function loadImages(access, isPost){
+	console.log(isPost);
+	console.log(access);
+	if (isPost) {
+		thumbFolder = "thumbnails/";
+		
+	} else {
+		thumbFolder = "pfpthumbs/";
+	}
     fetch("./readjson.php?access=" + access).
     then(function(resp){ 
       return resp.json();
@@ -132,23 +141,46 @@ function loadImages(access){
       }
      
 	  // sort contents of data by uid
-	  data.sort(sortByUID());
+	  if (data != null) {
+		data.sort(sortByUID());
 	 
-	  // save data into global array
-	  jsondata = data;
+	  	// save data into global array
+	  	jsondata = data;
 
-      // for every image, create a new image object and add to main
-      for (i in data){
+      	// for every image, create a new image object and add to main
+      	for (i in data){
         let img = new Image();
 		let card = document.createElement('div');
 		card.className = "card";
-		card.setAttribute("onclick", "displayLightBox('alt', '" + data[i].uid + "." + data[i].imagetype + "')");	
+		if (isPost) {
+			card.setAttribute("onclick", "displayLightBox('alt', '" + data[i].uid + "." + data[i].imagetype + "')");	
+		}
         console.log(data[i].uid + "." + data[i].imagetype);
-        img.src = "thumbnails/" + data[i].uid + "." + data[i].imagetype;
+        img.src = thumbFolder + data[i].uid + "." + data[i].imagetype;
         img.alt = data[i].desc;
 		img.className = "thumb";
         main.appendChild(card).appendChild(img);
+		if (!isPost) {
+			let followform = document.createElement('form');
+			followform.method = "post";
+			followform.setAttribute("onsubmit", "loadImages('allpfs', false)");
+			let follow = document.createElement('input');
+			follow.type = "image";
+			follow.src = "images/follow.png";
+			follow.alt = "follow button";
+			follow.className = "follow";
+			let userToFollow = document.createElement('input');
+			userToFollow.type = "hidden";
+			userToFollow.name = "userToFollow";
+			userToFollow.value = data[i].uid;
+			card.appendChild(followform).appendChild(follow);
+			followform.appendChild(userToFollow);
+
+		}
+
       }
+	  }
+	  
     });
 } // loadImages
 
@@ -184,8 +216,8 @@ function goToNextImage(direction) {
 }
 
 window.onload = function() {
-	loadImages("all");
-};
+	loadImages("all", true);
+}
 
 const searchbar = document.getElementById("searchbar");
 

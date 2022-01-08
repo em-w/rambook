@@ -1,6 +1,8 @@
 <div id="viewmenu">
-	<div onclick="loadImages('all')" class="viewbutton">show all posts</div>
-	<div onclick="loadImages('self')" class="viewbutton">my posts</div>
+	<div onclick="loadImages('all', true)" class="viewbutton">show all posts</div>
+	<div onclick="loadImages('following', true)" class="viewbutton">my feed</div>
+	<div onclick="loadImages('self', true)" class="viewbutton">my posts</div>
+	<div onclick="loadImages('allpfs', false)" class="viewbutton">show all profiles</div>
     <!-- <div onclick="loadImages('student')" class="viewbutton">show student profiles only</div> -->
     <!-- <div onclick="loadImages('alumnus')" class="viewbutton">show alumnus profiles only</div> -->
 	<!-- <div onclick="loadImages('staff')" class="viewbutton">show staff profiles only</div> -->
@@ -49,6 +51,7 @@
 	<img id="left" src="images/left.png" alt="left" onclick="goToNextImage(0)">
 	<img id="right" src="images/right.png" alt="right" onclick="goToNextImage(1)">
 	<img id="x" src="images/x.png" alt="close" onclick="displayLightBox('','')">
+	<img id="follow" src="images/follow.png" alt="follow user" onclick="follow(<?php $_SESSION["userUid"] ?>)">
 	<div id="boundaryBigImage" class="hidden">
         <img id="bigImage" src="images/arabian.jpg" alt="">
 		<a id="download" href="images/arabian.jpg" download>Download image</a>

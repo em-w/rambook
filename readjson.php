@@ -21,7 +21,35 @@ session_start();
   if ($access != "all") { 
       if ($access == "self") {
          $userstring = file_get_contents($_SESSION["userUid"] . ".json");
-         $returnData = json_decode($userstring);
+         $userposts = json_decode($userstring);
+         if ($userposts != null) {
+            $returnData = $userposts;
+         }
+      }
+
+      else if ($access == "allpfs") {
+         foreach ($userarray as $user) {
+            if ($user["uid"] != $_SESSION["userUid"]) {
+               $returnData[] = $user;
+            }
+         }
+      }
+
+      else if ($access == "following") {
+         $following = $userarray[$_SESSION["userUid"] - 1]["following"];
+         if ($following != null) {
+               foreach ($following as $userUid) {
+                  $userstring = file_get_contents($userUid . ".json");
+                  $userposts = json_decode($userstring, true);
+                  if ($userposts != null) {
+                  foreach ($userposts as $post) {
+                     $returnData[] = $post;
+                  } 
+               }
+            }
+        
+
+         }
       }
 
    /*foreach($phparray as $entry) {
@@ -34,9 +62,11 @@ session_start();
       foreach ($userarray as $user) {
          $userstring = file_get_contents($user["uid"] . ".json");
          $userposts = json_decode($userstring, true);
-         foreach ($userposts as $post) {
-            $returnData[] = $post;
-         } // this probably isn't the besk method, ask about merging arrays
+         if ($userposts != null) {
+            foreach ($userposts as $post) {
+               $returnData[] = $post;
+            } 
+         }
       }
   }
 

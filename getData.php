@@ -11,11 +11,14 @@
 		$userfile = $user["uid"] . ".json";
 		$userstring = file_get_contents($userfile);
 		$posts = json_decode($userstring, true);
-		foreach ($posts as $post) {
-			if ($post["uid"] == $uid) {
-				$post["author"] = $user["username"];
-				echo json_encode($post);
+		if ($posts != null) {
+			foreach ($posts as $post) {
+				if ($post["uid"] == $uid) {
+					$post["author"] = $user["username"];
+					echo json_encode($post);
+				}
 			}
 		}
+		
 	}
 ?>

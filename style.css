@@ -114,6 +114,11 @@ img {
 .card:hover {
 	background-color:purple;
 }
+
+.follow {
+	width: 30px;
+}
+
 #main {
   position:relative;
   margin-right:auto;

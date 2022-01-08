@@ -10,6 +10,8 @@ $credentials = [
 	$nameErr = $descErr = $agreeErr = $connErr = $pfpErr = $userErr = $pwdErr = "";
 
 	$uid = $imageFileType = "";
+
+	$isPfpUploaded = "";
 	
 	$error = false;	
 	
@@ -66,7 +68,7 @@ $credentials = [
 			} // else
 
 			if (empty($_FILES["image"]["name"])) {
-				$pfpErr = "Please upload a profile photo.";
+				$pfpErr = "Please upload an image for your post.";
 				$error = true;
 			} else {
 				// setting file-related variables if file is uploaded
@@ -160,13 +162,17 @@ $credentials = [
 				$agreement = $_POST["agreement"];
 			} // else
 			
+			$uid = file_get_contents("identifier.txt");
+
 			if (empty($_FILES["image"]["name"])) {
-				$pfpErr = "Please upload a profile photo.";
-				$error = true;
+				$imageFileType = "png"; // all default pfps are png files
+				$targetFile = $targetDir . $uid . "." . $imageFileType;
+				$isPfpUploaded = false;
 			} else {
+				$isPfpUploaded = true;
 				// setting file-related variables if file is uploaded
-				$uid = file_get_contents("identifier.txt");
 				$targetFile = $targetDir . basename($_FILES["image"]["name"]);
+
 				$imageFileType = strtolower(pathinfo($targetFile, PATHINFO_EXTENSION));
 				
 				// rename target file to uid
@@ -196,11 +202,16 @@ $credentials = [
 					
 				}
 			} // else
+		
+		// if follow button is pressed
+		} else if (isset($_POST["x"])) {
+			follow($_POST["userToFollow"]);
 		}
 	} // if
 	
 	// display login or signup if user is not logged in, store data if user signs up
 	if (!isset($_SESSION["loggedIn"])) {
+		include "loginmenu.inc";
 		if (isset($_GET["page"])) {
 			if ($_GET["page"] == "signup") {
 				include "signupform.inc";
@@ -212,14 +223,16 @@ $credentials = [
 		} else if (isset($_POST["signup"]) && !$error) {
 			$_POST["uid"] = $uid;
 			$_POST["imagetype"] = $imageFileType;
+			$_POST["following"] = array();
 			write_data_to_file($file);
-			upload_pfp($targetDir, $targetFile);
+			upload_pfp($targetDir, $targetFile, $isPfpUploaded);
 			
 			//creating user's .json file
 			file_put_contents($uid . ".json", "");
 
 			file_put_contents("identifier.txt", ($uid + 1));
 			
+
 			if (!is_dir("pfpthumbs/")) {
 				mkdir("pfpthumbs/", 0755);
 			}
@@ -237,16 +250,16 @@ $credentials = [
 		}
 		
 	} else {
-		// if form was submitted successfully
+		include "navmenu.inc";
+		// if post form was submitted successfully
 		if (isset($_POST["form"]) && !$error) {	
 			$_POST["uid"] = $uid;
 			$_POST["imagetype"] = $imageFileType;
 
 			write_data_to_file($_SESSION["userFile"]);
-			upload_pfp($postDir, $targetFile);
+			upload_pfp($postDir, $targetFile, true);
 
 			file_put_contents("postid.txt", $uid + 1);
-			include "home.inc";
 
 			if (!is_dir("thumbnails/")) {
 				mkdir("thumbnails/", 0755);
@@ -256,7 +269,9 @@ $credentials = [
 			if (!file_exists($dest)) {
 				createThumbnail($targetFile, $dest, 200, 200);	
 			}
-			
+
+			include "home.inc";
+		
 		} else if ($error || (isset($_GET["page"]) && $_GET["page"] == "form")) {
 			include "form.inc";
 		} else {
@@ -333,15 +348,48 @@ $credentials = [
 		// write json to file
 		file_put_contents($file, $jsoncode);
 	} // write_data_to_file
+
+	function follow($target) {
+		
+		$file = "userprofiles.json";
+
+		//decode json string into php array
+		if(file_exists($file)){
+			$jsonstring=file_get_contents($file);
+
+			$userprofiles = json_decode($jsonstring, true);
+		}
+
+		/*if (!isset($userprofiles[$_SESSION["userUid"]-1]["following"])) {
+			$userprofiles[$_SESSION["userUid"]-1]["following"][] = $target;
+		} else */
+		
+		if (!in_array($target, $userprofiles[$_SESSION["userUid"]-1]["following"])) {
+			$userprofiles[$_SESSION["userUid"]-1]["following"][] = $target;
+			
+		}
+
+		//add info to array
+
+		//encode back into file
+		$jsoncode = json_encode($userprofiles, JSON_PRETTY_PRINT);
+		file_put_contents($file, $jsoncode);
+		
+	} // follow
 	
-	function upload_pfp($targetDir, $targetFile) {
+	function upload_pfp($targetDir, $targetFile, $isUploaded) {
 		// if targetDir doesn't exist, create it
 		if (!is_dir($targetDir)) {
 			mkdir($targetDir, 0755);
 		}
 		
-		// upload the image file
-		move_uploaded_file($_FILES["image"]["tmp_name"], $targetFile);
+		if ($isUploaded) {
+			// upload the image file
+			move_uploaded_file($_FILES["image"]["tmp_name"], $targetFile);
+		} else {
+			copy("images/" . rand(0, 4) . ".png", $targetFile);
+		}
+		
 		
 		// replace the uploaded files with resized ones, if needed..?
 		createThumbnail($targetFile, $targetFile, 500, 500);
