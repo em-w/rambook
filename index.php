@@ -244,6 +244,8 @@ $credentials = [
 			
 			include "loginform.inc";
 
+		} else if ($error) {
+			include "signupform.inc";
 		}
 		else {
 			include "loginform.inc";
