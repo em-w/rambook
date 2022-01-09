@@ -26,7 +26,7 @@ $credentials = [
 
 	// if a form was submitted, validate data
 	if ($_SERVER["REQUEST_METHOD"] === "POST") {
-		
+	
 		// if login form is submitted
 		if (isset($_POST["login"])) {
 			$successful = false;
@@ -37,7 +37,7 @@ $credentials = [
 				$userprofiles = json_decode($jsonstring, true);
 
 				foreach ($userprofiles as $user) {
-					if ($user["username"] == $_POST["username"] && $user["password"] == $_POST["password"]) {
+					if ($user["username"] == $_POST["username"] && $user["password"] == hash("md5", $_POST["password"])) {
 						$_SESSION["loggedIn"] = 1;
 						$_SESSION["userUid"] = $user["uid"];
 						$_SESSION["userFile"] = $user["uid"] . ".json";
@@ -111,6 +111,8 @@ $credentials = [
 		
 		// if signup form is submitted
 		} else if (isset($_POST["signup"])) {
+
+			//check name
 			if (empty($_POST["name"])) {
 				$nameErr = "Name required.";
 				$error = true;
@@ -121,17 +123,30 @@ $credentials = [
 					$error = true;
 				}
 			} // else	
-			
+			//check description
 			if (empty($_POST["desc"])) {
 				$descErr = "Description required.";
 				$error = true;
 			} else {
 				$desc = format_input($_POST["desc"]);
 			} // else
-			
+
+			//check username
 			if (empty($_POST["username"])) {
 				$userErr = "Username required.";
 				$error = true;
+			} else if (file_exists($file)) {
+				$jsonstring = file_get_contents($file);
+				
+				// decode json string into php array
+				$userprofiles = json_decode($jsonstring, true);
+
+				foreach ($userprofiles as $user) {
+					if ($user["username"]==$_POST["username"]) {
+						$userErr = "This username is already taken! Please choose another.";
+						$error = true;
+					} // if
+				} // foreach
 			} else { // add error checking for alphanumerical characters only + no whitespace !
 				$username = format_input($_POST["username"]);
 			} // else
@@ -211,7 +226,7 @@ $credentials = [
 	
 	// display login or signup if user is not logged in, store data if user signs up
 	if (!isset($_SESSION["loggedIn"])) {
-		include "loginmenu.inc";
+		
 		if (isset($_GET["page"])) {
 			if ($_GET["page"] == "signup") {
 				include "signupform.inc";
@@ -224,6 +239,7 @@ $credentials = [
 			$_POST["uid"] = $uid;
 			$_POST["imagetype"] = $imageFileType;
 			$_POST["following"] = array();
+			$_POST["password"] = hash("md5", $_POST["password"]);
 			write_data_to_file($file);
 			upload_pfp($targetDir, $targetFile, $isPfpUploaded);
 			
@@ -248,7 +264,7 @@ $credentials = [
 			include "signupform.inc";
 		}
 		else {
-			include "loginform.inc";
+			include "loginmenu.inc";
 		}
 		
 	} else {

@@ -1,4 +1,6 @@
+<a href="?page=signup">Don't have an account? Sign up instead!:D</a>
 <form action="index.php" method="POST">
+
     <label for="username">Username:</label>
     <input type="text" id="username" name="username">
 

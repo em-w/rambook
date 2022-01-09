@@ -20,9 +20,7 @@
 	$thumbdir = "thumbnails/";
 	
 	echo "<div id='message'>";
-	if (file_exists($file)) {
-		echo "this is the gallery :D";
-	} else {
+	if (!file_exists($file)){
 		echo "nothing to see here...yet....";
 	}
 	echo "</div>";
@@ -51,7 +49,6 @@
 	<img id="left" src="images/left.png" alt="left" onclick="goToNextImage(0)">
 	<img id="right" src="images/right.png" alt="right" onclick="goToNextImage(1)">
 	<img id="x" src="images/x.png" alt="close" onclick="displayLightBox('','')">
-	<img id="follow" src="images/follow.png" alt="follow user" onclick="follow(<?php $_SESSION["userUid"] ?>)">
 	<div id="boundaryBigImage" class="hidden">
         <img id="bigImage" src="images/arabian.jpg" alt="">
 		<a id="download" href="images/arabian.jpg" download>Download image</a>

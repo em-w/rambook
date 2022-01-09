@@ -1,4 +1,4 @@
-<h2>Welcome to RamBook!</h2>
+<a href="?page=login">Already have an account? Log in instead:D</a>
 <p class="error">* Required</p>
 
 <form method="POST" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>" enctype="multipart/form-data">
