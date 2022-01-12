@@ -436,14 +436,6 @@ $credentials = [
 		$jsoncode = json_encode($targetpost, JSON_PRETTY_PRINT);
 		file_put_contents($file, $jsoncode);
 		
-		echo"<pre>";
-		var_dump($targetPost);
-		echo "</pre>";
-		
-		echo "<pre>";
-		var_dump($userprofiles);
-		echo "</pre>";
-		
 	} // like
 	
 	function unlike($targetPost){
