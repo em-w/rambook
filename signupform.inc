@@ -52,5 +52,5 @@
 	<textarea id="desc" name="desc" rows="4" cols="50"><?php echo $desc; ?></textarea>
 	<br>
 	<br>
-	<input type=submit value="Submit!" name="signup" class="button">
+	<input type=submit value="Sign Up!" name="signup" class="button">
 </form>

@@ -25,7 +25,7 @@ $credentials = [
 	include "header.inc";
 
 	// if a form was submitted, validate data
-	if ($_SERVER["REQUEST_METHOD"] === "POST") {
+	if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	
 		// if login form is submitted
 		if (isset($_POST["login"])) {
@@ -149,6 +149,7 @@ $credentials = [
 				} // foreach
 			} else { // add error checking for alphanumerical characters only + no whitespace !
 				$username = format_input($_POST["username"]);
+				
 			} // else
 
 			if (empty($_POST["password"])) {
@@ -219,8 +220,10 @@ $credentials = [
 			} // else
 		
 		// if follow button is pressed
-		} else if (isset($_POST["x"])) {
+		} else if (isset($_POST["userToFollow"])) {
 			follow($_POST["userToFollow"]);
+		} else if (isset($_POST["postToLike"])) { // if like button is pressed
+			like($_POST["postToLike"]);
 		}
 	} // if
 	
@@ -239,6 +242,7 @@ $credentials = [
 			$_POST["uid"] = $uid;
 			$_POST["imagetype"] = $imageFileType;
 			$_POST["following"] = array();
+			$_POST["likedPosts"] = array();
 			$_POST["password"] = hash("md5", $_POST["password"]);
 			write_data_to_file($file);
 			upload_pfp($targetDir, $targetFile, $isPfpUploaded);
@@ -273,6 +277,7 @@ $credentials = [
 		if (isset($_POST["form"]) && !$error) {	
 			$_POST["uid"] = $uid;
 			$_POST["imagetype"] = $imageFileType;
+			$_POST["likedBy"] = array();
 
 			write_data_to_file($_SESSION["userFile"]);
 			upload_pfp($postDir, $targetFile, true);
@@ -367,33 +372,120 @@ $credentials = [
 		file_put_contents($file, $jsoncode);
 	} // write_data_to_file
 
-	function follow($target) {
+	function follow($targetUser) {
 		
 		$file = "userprofiles.json";
 
 		//decode json string into php array
 		if(file_exists($file)){
-			$jsonstring=file_get_contents($file);
+			$jsonstring = file_get_contents($file);
 
 			$userprofiles = json_decode($jsonstring, true);
-		}
-
-		/*if (!isset($userprofiles[$_SESSION["userUid"]-1]["following"])) {
-			$userprofiles[$_SESSION["userUid"]-1]["following"][] = $target;
-		} else */
+		} // if
 		
-		if (!in_array($target, $userprofiles[$_SESSION["userUid"]-1]["following"])) {
-			$userprofiles[$_SESSION["userUid"]-1]["following"][] = $target;
+		// check if targetUser is already followed
+		if (!in_array($targetUser, $userprofiles[$_SESSION["userUid"]-1]["following"])) {
+			$userprofiles[$_SESSION["userUid"]-1]["following"][] = $targetUser;
 			
-		}
-
-		//add info to array
-
+		} // if
+	
 		//encode back into file
 		$jsoncode = json_encode($userprofiles, JSON_PRETTY_PRINT);
 		file_put_contents($file, $jsoncode);
 		
 	} // follow
+	
+	function like($targetPost){
+		
+		// update user's liked posts
+		$file = "userprofiles.json";
+		
+		//decode json string into php array
+		if(file_exists($file)){
+			$jsonstring = file_get_contents($file);
+
+			$userprofiles = json_decode($jsonstring, true);
+		} // if
+		
+		// check if targetpost is in array of liked posts
+		if(!in_array($targetPost, $userprofiles[$_SESSION["userUid"]-1]["likedPosts"])){
+			$userprofiles[$_SESSION["userUid"]-1]["likedPosts"][] = $targetPost;
+		}
+		// encode back into file
+		$jsoncode = json_encode($userprofiles, JSON_PRETTY_PRINT);
+		file_put_contents($file, $jsoncode);
+		
+		//update post's number of likes
+		$file = "$targetPost.json";
+		
+		//decode json string into php array
+		if(file_exists($file)){
+			$jsonstring = file_get_contents($file);
+			$targetpost = json_decode($jsonstring, true);
+		} // if
+		
+		// creates likedBy array if doesn't exist
+		if(!isset($likedBy)){
+			$targetpost["likedBy"] = array();
+		}
+		//check if post has already been liked
+		if(!in_array($_SESSION["userUid"], $targetpost["likedBy"])) {
+			$targetpost["likedBy"][] = $_SESSION["userUid"];
+		}
+		//encode back into file
+		$jsoncode = json_encode($targetpost, JSON_PRETTY_PRINT);
+		file_put_contents($file, $jsoncode);
+		
+		echo"<pre>";
+		var_dump($targetPost);
+		echo "</pre>";
+		
+		echo "<pre>";
+		var_dump($userprofiles);
+		echo "</pre>";
+		
+	} // like
+	
+	function unlike($targetPost){
+		
+		//update user's liked posts
+		$file = "userprofiles.json";
+		
+		//decode json string into php array
+		if(file_exists($file)){
+			$jsonstring = file_get_contents($file);
+
+			$userprofiles = json_decode($jsonstring, true);
+		} // if
+		
+		// check if targetpost is in array of liked posts
+		if(in_array($targetPost, $userprofiles[$_SESSION["userUid"]-1]["likedPosts"])){
+			unset($userprofiles[$_SESSION["userUid"]-1]["likedPosts"][$targetPost]); // removes post from array
+		}
+		// encode back into file
+		$jsoncode = json_encode($userprofiles, JSON_PRETTY_PRINT);
+		file_put_contents($file, $jsoncode);
+		
+		//update post's number of likes
+		$file = "$targetPost.json";
+		
+		//decode json string into php array
+		if(file_exists($file)){
+			$jsonstring = file_get_contents($file);
+			$targetpost = json_decode($jsonstring, true);
+		} // if
+		if(!in_array("likedBy", $targetpost)){
+			$targetpost["likedBy"] = array();
+		}
+		//check if post has already been liked
+		if(in_array($_SESSION["userUid"], $targetpost["likedBy"])) {
+			unset($targetpost["likedBy"][$_SESSION["userUid"]]);
+		}
+		//encode back into file
+		$jsoncode = json_encode($targetpost, JSON_PRETTY_PRINT);
+		file_put_contents($file, $jsoncode);
+		
+	} // unlike
 	
 	function upload_pfp($targetDir, $targetFile, $isUploaded) {
 		// if targetDir doesn't exist, create it
