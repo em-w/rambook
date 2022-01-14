@@ -1,5 +1,4 @@
 <?php
-
 // temp
 $credentials = [
     'username' => 'username', 
@@ -37,7 +36,7 @@ $credentials = [
 				$userprofiles = json_decode($jsonstring, true);
 
 				foreach ($userprofiles as $user) {
-					if ($user["username"] == $_POST["username"] && $user["password"] == hash("md5", $_POST["password"])) {
+					if ($user["username"] == $_POST["username"] && $user["password"] == $_POST["password"]) {
 						$_SESSION["loggedIn"] = 1;
 						$_SESSION["userUid"] = $user["uid"];
 						$_SESSION["userFile"] = $user["uid"] . ".json";
@@ -230,6 +229,7 @@ $credentials = [
 		if (isset($_GET["page"])) {
 			if ($_GET["page"] == "signup") {
 				include "signupform.inc";
+				echo "<script src='md5.js'></script>";
 			} else {
 				include "loginform.inc";
 			}
@@ -239,7 +239,7 @@ $credentials = [
 			$_POST["uid"] = $uid;
 			$_POST["imagetype"] = $imageFileType;
 			$_POST["following"] = array();
-			$_POST["password"] = hash("md5", $_POST["password"]);
+			$_POST["password"] = $_POST["password"];
 			write_data_to_file($file);
 			upload_pfp($targetDir, $targetFile, $isPfpUploaded);
 			
@@ -262,6 +262,7 @@ $credentials = [
 
 		} else if ($error) {
 			include "signupform.inc";
+			echo "<script src='md5.js'></script>";
 		}
 		else {
 			include "loginmenu.inc";
@@ -297,6 +298,7 @@ $credentials = [
 		} // else
 		
 		if (isset($_GET["action"]) && $_GET["action"] == "del") {
+			echo "TOOOOOTT";
 			if (file_exists($file)) {
 				$jsonstring = file_get_contents($file);
 				
@@ -358,7 +360,16 @@ $credentials = [
 		}
 		
 		// add form submission to data
-		$userprofiles[] = $_POST;
+		if ($file == "userprofiles.json") {                                                 //Inefficient prob better way
+			$submission[] = $_POST;
+			array_splice($submission[0], 1, 1);
+			echo "<pre>";
+			var_dump($submission);
+			echo "</pre>";
+			$userprofiles[] = $submission;
+		}else {
+			$userprofiles[] = $_POST;
+		}
 		
 		// encode php array to formatted json
 		$jsoncode = json_encode($userprofiles, JSON_PRETTY_PRINT);
@@ -414,16 +425,13 @@ $credentials = [
 	}
 	
 	function delete_images($dir) {
-		if (is_dir($dir)) {
-			if ($dh = opendir($dir)) {
-				while (($tempfile = readdir($dh)) !== false) {
-					if (!($tempfile === ".." || $tempfile === ".")) {
-						unlink($dir . $tempfile);
-					}
+		if ($dh = opendir($dir)) {
+			while (($tempfile = readdir($dh)) !== false) {
+				if (!($tempfile === ".." || $tempfile === ".")) {
+					unlink($dir . $tempfile);
 				}
-				closedir($dh);
 			}
+			closedir($dh);
 		}
-		
 	}
 ?>

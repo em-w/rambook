@@ -19,18 +19,26 @@ window.onload = function() {
 	showChosenGrade();
 };
 
+
 // initialize hidden elements of lightbox
 window.onload = function (){
 	document.getElementById("positionBigImage").style.display = "none";
 	document.getElementById("lightbox").style.display = "none";
 };
 
+//onchange hash
+function hash() {
+	console.log(document.getElementById("passwordField").value);
+	document.getElementById("password").value = md5(document.getElementById("passwordField").value);
+	console.log(document.getElementById("password").value);
+}
+
 //Onchange of upload, get temp url and create an image
 function previewImg () {
 	const [imgFile] = document.getElementById("image").files;
 	console.log(imgFile);
 	if (imgFile) {
-		document.getElementById("preview").src = URL.createObjectURL(imgFile);
+		document.getElementById("preview").src = createObjectURL(imgFile[0]);//<?php precreate(imgFile, 500, 500);?>;
 	}
 }
 
@@ -124,64 +132,67 @@ function loadImages(access, isPost){
 	} else {
 		thumbFolder = "pfpthumbs/";
 	}
-    fetch("./readjson.php?access=" + access).
-    then(function(resp){ 
-      return resp.json();
-    })
-    .then(function(data){
-      console.log(data); 
+	fetch("./readjson.php?access=" + access).
+	then(function(resp){ 
+	  return resp.json();
+	})
+	.then(function(data){
+	  console.log(data); 
 	  
 	  // everything beyond this point can be turned into a method probably
-      let i;  // counter     
-      let main = document.getElementById("main");
-      
-      // remove all existing children of main
-      while (main.firstChild) {
-        main.removeChild(main.firstChild);
-      }
-     
-	  // sort contents of data by uid
-	  if (data != null) {
-		data.sort(sortByUID());
-	 
-	  	// save data into global array
-	  	jsondata = data;
-
-      	// for every image, create a new image object and add to main
-      	for (i in data){
-        let img = new Image();
-		let card = document.createElement('div');
-		card.className = "card";
-		if (isPost) {
-			card.setAttribute("onclick", "displayLightBox('alt', '" + data[i].uid + "." + data[i].imagetype + "')");	
-		}
-        console.log(data[i].uid + "." + data[i].imagetype);
-        img.src = thumbFolder + data[i].uid + "." + data[i].imagetype;
-        img.alt = data[i].desc;
-		img.className = "thumb";
-        main.appendChild(card).appendChild(img);
-		if (!isPost) {
-			let followform = document.createElement('form');
-			followform.method = "post";
-			followform.setAttribute("onsubmit", "loadImages('allpfs', false)");
-			let follow = document.createElement('input');
-			follow.type = "image";
-			follow.src = "images/follow.png";
-			follow.alt = "follow button";
-			follow.className = "follow";
-			let userToFollow = document.createElement('input');
-			userToFollow.type = "hidden";
-			userToFollow.name = "userToFollow";
-			userToFollow.value = data[i].uid;
-			card.appendChild(followform).appendChild(follow);
-			followform.appendChild(userToFollow);
-
-		}
-
-      }
-	  }
+	  let i;  // counter     
+	  let main = document.getElementById("main");
 	  
-    });
+		  // remove all existing children of main
+		  while (main.firstChild) {
+			main.removeChild(main.firstChild);
+		  }
+		 
+		  // sort contents of data by uid
+		  if (data != null) {
+			data.sort(sortByUID());
+		 
+			// save data into global array
+			jsondata = data;
+
+			// for every image, create a new image object and add to main
+			for (i in data){
+				let img = new Image();
+				let card = document.createElement('div');
+				card.className = "card";
+				if (isPost) {
+					card.setAttribute("onclick", "displayLightBox('alt', '" + data[i].uid + "." + data[i].imagetype + "')");	
+				}
+				console.log(data[i].uid + "." + data[i].imagetype);
+				img.src = thumbFolder + data[i].uid + "." + data[i].imagetype;
+				img.alt = data[i].desc;
+				img.className = "thumb";
+				main.appendChild(card).appendChild(img);
+				if (!isPost) {
+					let followform = document.createElement('form');
+					followform.method = "post";
+					followform.setAttribute("onsubmit", "loadImages('allpfs', false)");
+					let follow = document.createElement('input');
+					follow.type = "image";
+					follow.src = "images/follow.png";
+					follow.alt = "follow button";
+					follow.className = "follow";
+					let userToFollow = document.createElement('input');
+					userToFollow.type = "hidden";
+					userToFollow.name = "userToFollow";
+					userToFollow.value = data[i].uid;
+					card.appendChild(followform).appendChild(follow);
+					followform.appendChild(userToFollow);
+
+				}
+			}
+
+		  }
+		  
+		});
+
+
+
 } // loadImages
 
 // display the next image (of images currently displayed) in the lightbox
@@ -257,10 +268,12 @@ function searchProfiles(term) {
 	  let message = document.getElementById("message");
       
       // remove all existing children of main
-      while (main.firstChild) {
-        main.removeChild(main.firstChild);
-      }
-     
+	  if (main.firstChild != null) {
+		  while (main.firstChild) {
+			main.removeChild(main.firstChild);
+		  }
+	  }
+	 
 	  // sort contents of data by uid
 	  data.sort(sortByUID());
 	 
