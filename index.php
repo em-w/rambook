@@ -5,8 +5,9 @@ $credentials = [
     'password' => 'password' 
 ];
 	
-	$name = $desc = $agreement = $connection = $grade = $username = $password = "";
-	$nameErr = $descErr = $agreeErr = $connErr = $pfpErr = $userErr = $pwdErr = "";
+	$name = $desc = $tagstring = $agreement = $connection = $grade = $username = $password = "";
+	$tags = array();
+	$nameErr = $descErr = $tagsErr= $agreeErr = $connErr = $pfpErr = $userErr = $pwdErr = "";
 
 	$uid = $imageFileType = "";
 
@@ -52,13 +53,19 @@ $credentials = [
 		
 		// if post upload form is submitted
 		} else if (isset($_POST["form"])) {
-			if (empty($_POST["desc"])) {
-				$descErr = "Description required.";
-				$error = true;
-			} else {
-				$desc = format_input($_POST["desc"]);
-			} 	
-
+			
+			if (!empty($_POST["desc"])) {
+				$desc = format_input($_POST["desc"]); 	
+			} 
+			
+			if (!empty($_POST["tags"])) {
+				$tagstring = format_input($_POST["tags"]);
+				if (!preg_match("/^[a-zA-Z0-9-', ]*$/", $tagstring)) {
+					$tagsErr = "Letters, numbers, commas, and whitespace only please.";
+					$error = true;
+				}
+			}
+			
 			if (empty($_POST["agreement"])) {
 				$agreeErr = "Please check.";
 				$error = true;
@@ -135,6 +142,7 @@ $credentials = [
 				$userErr = "Username required.";
 				$error = true;
 			} else if (file_exists($file)) {
+				$username = format_input($_POST["username"]);
 				$jsonstring = file_get_contents($file);
 				
 				// decode json string into php array
@@ -149,7 +157,8 @@ $credentials = [
 			} else { // add error checking for alphanumerical characters only + no whitespace !
 				$username = format_input($_POST["username"]);
 			} // else
-
+			
+			
 			if (empty($_POST["password"])) {
 				$pwdErr = "Password required.";
 				$error = true;
@@ -236,6 +245,9 @@ $credentials = [
 
 		// if signup form was submitted successfully
 		} else if (isset($_POST["signup"]) && !$error) {
+			$_POST["username"] = $username;
+			$_POST["desc"] = $desc;
+			$_POST["name"] = $name;
 			$_POST["uid"] = $uid;
 			$_POST["imagetype"] = $imageFileType;
 			$_POST["following"] = array();
@@ -274,6 +286,19 @@ $credentials = [
 		if (isset($_POST["form"]) && !$error) {	
 			$_POST["uid"] = $uid;
 			$_POST["imagetype"] = $imageFileType;
+			$_POST["desc"] = $desc;
+			
+			$tags = explode(",", $tagstring);
+				
+			foreach ($tags as &$tag) {
+				$tag = format_input($tag);
+				$tag = str_replace(" ", "", $tag);
+				
+			}
+			
+			$tags = array_unique($tags);
+			
+			$_POST["tags"] = $tags;
 
 			write_data_to_file($_SESSION["userFile"]);
 			upload_pfp($postDir, $targetFile, true);

@@ -106,7 +106,16 @@ function displayLightBox(alt, imageFile) {
 // display user's name, grade, description, ect. under big image in lightbox
 function updatePostContents(data) {
 	console.log(data);
-	document.getElementById("text").innerHTML = "Posted by: " + data.author + "<br><br>" + data.desc;
+	
+	
+	
+	var taglinks = "";
+	
+	for (tag in data.tags) {
+		taglinks += "<a href='javascript:searchProfiles(\"" + data.tags[tag] + "\"); changeVisibility(\"lightbox\"); changeVisibility(\"positionBigImage\");'> #" + data.tags[tag] + "</a>&nbsp;&nbsp;&nbsp;&nbsp;"; 
+	}
+	
+	document.getElementById("text").innerHTML = "Posted by: " + data.author + "<br><br>" + data.desc + "<br><br>" + taglinks;
 }
 
 
@@ -191,6 +200,42 @@ function loadImages(access, isPost){
 		  
 		});
 
+      	// for every image, create a new image object and add to main
+      	for (i in data){
+        let img = new Image();
+		let card = document.createElement('div');
+		card.className = "card";
+		if (isPost) {
+			card.setAttribute("onclick", "displayLightBox('alt', '" + data[i].uid + "." + data[i].imagetype + "')");	
+		}
+        console.log(data[i].uid + "." + data[i].imagetype);
+        img.src = thumbFolder + data[i].uid + "." + data[i].imagetype;
+        img.alt = data[i].desc;
+		img.className = "thumb";
+        main.appendChild(card).appendChild(img);
+		if (!isPost) {
+			let followform = document.createElement('form');
+			followform.method = "post";
+			followform.setAttribute("onsubmit", "loadImages('allpfs', false)");
+			let follow = document.createElement('input');
+			follow.type = "image";
+			follow.src = "images/follow.png";
+			follow.alt = "follow button";
+			follow.className = "follow";
+			let userToFollow = document.createElement('input');
+			userToFollow.type = "hidden";
+			userToFollow.name = "userToFollow";
+			userToFollow.value = data[i].uid;
+			card.appendChild(followform).appendChild(follow);
+			followform.appendChild(userToFollow);
+			
+			let username = document.createElement('a');
+			let usernameText = document.createTextNode(data[i].username);
+			username.href = "javascript:loadImages(" + data[i].uid + ", true);";
+			username.appendChild(usernameText);
+			
+			card.appendChild(username);
+      
 
 
 } // loadImages
