@@ -98,7 +98,16 @@ function displayLightBox(alt, imageFile) {
 // display user's name, grade, description, ect. under big image in lightbox
 function updatePostContents(data) {
 	console.log(data);
-	document.getElementById("text").innerHTML = "Posted by: " + data.author + "<br><br>" + data.desc;
+	
+	
+	
+	var taglinks = "";
+	
+	for (tag in data.tags) {
+		taglinks += "<a href='javascript:searchProfiles(\"" + data.tags[tag] + "\"); changeVisibility(\"lightbox\"); changeVisibility(\"positionBigImage\");'> #" + data.tags[tag] + "</a>&nbsp;&nbsp;&nbsp;&nbsp;"; 
+	}
+	
+	document.getElementById("text").innerHTML = "Posted by: " + data.author + "<br><br>" + data.desc + "<br><br>" + taglinks;
 }
 
 
@@ -175,6 +184,13 @@ function loadImages(access, isPost){
 			userToFollow.value = data[i].uid;
 			card.appendChild(followform).appendChild(follow);
 			followform.appendChild(userToFollow);
+			
+			let username = document.createElement('a');
+			let usernameText = document.createTextNode(data[i].username);
+			username.href = "javascript:loadImages(" + data[i].uid + ", true);";
+			username.appendChild(usernameText);
+			
+			card.appendChild(username);
 
 		}
 

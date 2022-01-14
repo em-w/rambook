@@ -51,6 +51,15 @@ session_start();
 
          }
       }
+	  
+	  else if (is_numeric($access)) {
+		 $userstring = file_get_contents($access . ".json");
+         $userposts = json_decode($userstring);
+         if ($userposts != null) {
+            $returnData = $userposts;
+         }
+		
+	  }
 
    /*foreach($phparray as $entry) {
       if ($entry["connection"] == $access) {
