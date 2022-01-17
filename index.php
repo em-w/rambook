@@ -36,6 +36,14 @@ $credentials = [
 				// decode json string into php array
 				$userprofiles = json_decode($jsonstring, true);
 
+				array_splice($_POST, 1, 1);
+
+				echo "<pre>";
+				var_dump($_POST);
+				echo "</pre>";
+				
+
+
 				foreach ($userprofiles as $user) {
 					if ($user["username"] == $_POST["username"] && $user["password"] == $_POST["password"]) {
 						$_SESSION["loggedIn"] = 1;
@@ -156,6 +164,10 @@ $credentials = [
 				} // foreach
 			} else { // add error checking for alphanumerical characters only + no whitespace !
 				$username = format_input($_POST["username"]);
+				if (!preg_match("/^[a-zA-Z0-9-.]*$/", $name)) {
+					$userErr = "Letters, numbers, dashes and dots only, please.";
+					$error = true;
+				}
 			} // else
 			
 			
@@ -251,7 +263,6 @@ $credentials = [
 			$_POST["uid"] = $uid;
 			$_POST["imagetype"] = $imageFileType;
 			$_POST["following"] = array();
-			$_POST["password"] = $_POST["password"];
 			write_data_to_file($file);
 			upload_pfp($targetDir, $targetFile, $isPfpUploaded);
 			
@@ -260,16 +271,15 @@ $credentials = [
 
 			file_put_contents("identifier.txt", ($uid + 1));
 			
-
 			if (!is_dir("pfpthumbs/")) {
 				mkdir("pfpthumbs/", 0755);
 			}
 			$dest = "pfpthumbs/" . $uid . "." . $imageFileType;
 			
 			if (!file_exists($dest)) {
-				createThumbnail($targetFile, $dest, 200, 200);	
+				createThumbnail($targetFile, $dest, 200, 200);
 			}
-			
+
 			include "loginform.inc";
 
 		} else if ($error) {
@@ -375,7 +385,7 @@ $credentials = [
 		$input = htmlspecialchars($input);
 		return $input;
 	} // format_input
-	 
+	
 	function write_data_to_file($file) {
 		if (file_exists($file)) {
 			$jsonstring = file_get_contents($file);
@@ -385,16 +395,10 @@ $credentials = [
 		}
 		
 		// add form submission to data
-		if ($file == "userprofiles.json") {                                                 //Inefficient prob better way
-			$submission[] = $_POST;
-			array_splice($submission[0], 1, 1);
-			echo "<pre>";
-			var_dump($submission);
-			echo "</pre>";
-			$userprofiles[] = $submission;
-		}else {
-			$userprofiles[] = $_POST;
+		if ($file == "userprofiles.json") { //Inefficient prob better way
+			array_splice($_POST, 1, 1);
 		}
+		$userprofiles[] = $_POST;
 		
 		// encode php array to formatted json
 		$jsoncode = json_encode($userprofiles, JSON_PRETTY_PRINT);

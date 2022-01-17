@@ -348,3 +348,5 @@ function searchProfiles(term) {
 
 
 }
+
+}}
