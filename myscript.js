@@ -28,9 +28,7 @@ window.onload = function (){
 
 //onchange hash
 function hash() {
-	console.log(document.getElementById("passwordField").value);
-	document.getElementById("password").value = md5(document.getElementById("passwordField").value);
-	console.log(document.getElementById("password").value);
+	document.getElementById("password").value = md5(document.getElementById("password").value);
 }
 
 //Onchange of upload, get temp url and create an image
