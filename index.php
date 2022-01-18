@@ -65,6 +65,8 @@ $credentials = [
 				}
 			}
 			
+			$signupform = new DOMDocument();
+
 			if (empty($_POST["agreement"])) {
 				$agreeErr = "Please check.";
 				$error = true;
@@ -230,9 +232,12 @@ $credentials = [
 			} // else
 		
 		// if follow button is pressed
-		} else if (isset($_POST["x"])) {
+		} else if (isset($_POST["userToFollow"])) {
 			follow($_POST["userToFollow"]);
+		} else if (isset($_POST["userToUnfollow"])) {
+			unfollow($_POST["userToUnfollow"]);
 		}
+
 	} // if
 	
 	// display login or signup if user is not logged in, store data if user signs up
@@ -405,17 +410,11 @@ $credentials = [
 
 			$userprofiles = json_decode($jsonstring, true);
 		}
-
-		/*if (!isset($userprofiles[$_SESSION["userUid"]-1]["following"])) {
-			$userprofiles[$_SESSION["userUid"]-1]["following"][] = $target;
-		} else */
 		
 		if (!in_array($target, $userprofiles[$_SESSION["userUid"]-1]["following"])) {
 			$userprofiles[$_SESSION["userUid"]-1]["following"][] = $target;
 			
 		}
-
-		//add info to array
 
 		//encode back into file
 		$jsoncode = json_encode($userprofiles, JSON_PRETTY_PRINT);
@@ -423,6 +422,26 @@ $credentials = [
 		
 	} // follow
 	
+	//unfollow
+	function unfollow($target) {
+		$file = "userprofiles.json";
+
+		if(file_exists($file)){
+			$jsonstring=file_get_contents($file);
+
+			$userprofiles = json_decode($jsonstring, true);
+		}
+
+		$key = array_search($target, $userprofiles[$_SESSION["userUid"]-1]["following"]);
+
+		unset($userprofiles[$_SESSION["userUid"]-1]["following"][$key]);
+
+
+		//encode back into file
+		$jsoncode = json_encode($userprofiles, JSON_PRETTY_PRINT);
+		file_put_contents($file, $jsoncode);
+	}
+
 	function upload_pfp($targetDir, $targetFile, $isUploaded) {
 		// if targetDir doesn't exist, create it
 		if (!is_dir($targetDir)) {

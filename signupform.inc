@@ -16,8 +16,12 @@
 	<img id="imgSrc">
 	<canvas id="preview" width="220" height="220"></canvas><br><br>
 	
-    <input type="checkbox" id="agreement" name="agreement" <?php if ($agreement != "") echo "checked"; ?>> 
-	
+    <div id="agreementDiv">
+		<input type="checkbox" id="agreement" name="agreement" checked> 
+		<label for="agreement">I give RamBook non-exclusive, transferable, sub-licensable, royalty-free, worldwide license to use this photo.</label>
+		<span class = "error"> * <?php echo $agreeErr; ?> </span> <br><br>
+	</div>
+
     <label for="agreement">I give RamBook non-exclusive, transferable, sub-licensable, royalty-free, worldwide license to use this photo.</label>
 	<span class = "error"> * <?php echo $agreeErr; ?> </span> <br><br>
 	

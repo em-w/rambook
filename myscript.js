@@ -3,20 +3,26 @@ let previewImg = document.getElementById("imgSrc");//image preview obj
 let size = 0; //stores size of preview
 
 function showGradeMenu() {
-	var x = document.getElementById("gradeMenu");
+	let x = document.getElementById("gradeMenu");
 	x.style.display = "block";
 }
 
 function hideGradeMenu() {
-	var x = document.getElementById("gradeMenu");
+	let x = document.getElementById("gradeMenu");
 	x.style.display = "none";
 }
 
 function showChosenGrade() {
-	var student = document.getElementById("student");
+	let student = document.getElementById("student");
 	if (student.checked) {
 		showGradeMenu();
 	}
+}
+
+function showAgreement() {
+	let x = document.getElementById("agreementDiv");
+	x.style.display = "block";
+	document.getElementById("agreement").checked = false;
 }
 
 //onload of image preview crop and resize it
@@ -170,25 +176,43 @@ function loadImages(access, isPost){
 		thumbFolder = "pfpthumbs/";
 	}
 	fetch("./readjson.php?access=" + access).
-	then(function(resp){ 
-	  return resp.json();
-	})
-	.then(function(data){
-	  console.log(data); 
-	  
-	  // everything beyond this point can be turned into a method probably
-	  let i;  // counter     
-	  let main = document.getElementById("main");
-	  
-		  // remove all existing children of main
-		  while (main.firstChild) {
-			main.removeChild(main.firstChild);
-		  }
-		 
-		  // sort contents of data by uid
-		  if (data != null) {
-			data.sort(sortByUID());
-		 
+    then(function(resp){ 
+      return resp.json();
+    })
+    .then(function(data){
+		console.log(data); 
+		let followingArray = [];
+
+		// everything beyond this point can be turned into a method probably
+		   let i;  // counter     
+		let j; // other counter
+		let main = document.getElementById("main");
+		// remove all existing children of main
+		while (main.firstChild) {
+		main.removeChild(main.firstChild);
+		}
+
+		// sort contents of data by uid
+		if (data != null) {
+		data.sort(sortByUID());
+
+
+
+			//get following list
+			if (!isPost) {
+				for (j in data) { // fix me :(
+				console.log(data[j].current);
+					if (data[j].current) {
+						followingArray = data[j].following;
+						console.log(followingArray); // come back
+						data.splice(j, 1);
+
+						break;
+					}				
+				}
+			}
+			console.log(followingArray); // come back
+
 			// save data into global array
 			jsondata = data;
 
@@ -211,62 +235,49 @@ function loadImages(access, isPost){
 					followform.setAttribute("onsubmit", "loadImages('allpfs', false)");
 					let follow = document.createElement('input');
 					follow.type = "image";
-					follow.src = "images/follow.png";
-					follow.alt = "follow button";
 					follow.className = "follow";
 					let userToFollow = document.createElement('input');
 					userToFollow.type = "hidden";
-					userToFollow.name = "userToFollow";
 					userToFollow.value = data[i].uid;
 					card.appendChild(followform).appendChild(follow);
 					followform.appendChild(userToFollow);
+					console.log(followingArray); // come back
+					if (followingArray.includes(data[i].uid)) {
+						follow.src = "images/unfollow.png";
+						follow.alt = "unfollow button";
+						userToFollow.name = "userToUnfollow";
 
-				}
-			}
+					}
+					else {
+						follow.src = "images/follow.png";
+						follow.alt = "follow button";
+						userToFollow.name = "userToFollow";
 
-		  }
-		  
-		});
-
-      	// for every image, create a new image object and add to main
-      	for (i in data){
-        let img = new Image();
-		let card = document.createElement('div');
-		card.className = "card";
-		if (isPost) {
-			card.setAttribute("onclick", "displayLightBox('alt', '" + data[i].uid + "." + data[i].imagetype + "')");	
-		}
-        console.log(data[i].uid + "." + data[i].imagetype);
-        img.src = thumbFolder + data[i].uid + "." + data[i].imagetype;
-        img.alt = data[i].desc;
-		img.className = "thumb";
-        main.appendChild(card).appendChild(img);
-		if (!isPost) {
-			let followform = document.createElement('form');
-			followform.method = "post";
-			followform.setAttribute("onsubmit", "loadImages('allpfs', false)");
-			let follow = document.createElement('input');
-			follow.type = "image";
-			follow.src = "images/follow.png";
-			follow.alt = "follow button";
-			follow.className = "follow";
-			let userToFollow = document.createElement('input');
-			userToFollow.type = "hidden";
-			userToFollow.name = "userToFollow";
-			userToFollow.value = data[i].uid;
-			card.appendChild(followform).appendChild(follow);
-			followform.appendChild(userToFollow);
-			
-			let username = document.createElement('a');
-			let usernameText = document.createTextNode(data[i].username);
-			username.href = "javascript:loadImages(" + data[i].uid + ", true);";
-			username.appendChild(usernameText);
-			
-			card.appendChild(username);
-      
-
-
+					}
+					
+					let username = document.createElement('a');
+					let usernameText = document.createTextNode(data[i].username);
+					username.href = "javascript:loadImages(" + data[i].uid + ", true);";
+					username.appendChild(usernameText);
+					
+					card.appendChild(username);
+				}//if(!isPost)
+			}//for
+		}//if(data!=null)
+	});//fetch then
 } // loadImages
+
+// return the provided session variable FIX ME
+function getSessionVariable(variable) {
+	fetch("./getsessionvariables.php?var=" + variable).
+    then(function(resp){
+        return resp.json;
+    }).
+	then(function(data) {
+		console.log(data);
+		console.log("sdhfjkdskf");
+		return data;	});
+}
 
 // display the next image (of images currently displayed) in the lightbox
 function goToNextImage(direction) {
@@ -374,7 +385,4 @@ function searchProfiles(term) {
       
     });
 
-
 }
-
-}}
