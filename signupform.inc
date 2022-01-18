@@ -5,23 +5,21 @@
     <label for="username">Username:</label>
     <input type="text" id="username" name="username" value="<?php echo $username; ?>"> <span class="error"> * <?php echo $userErr; ?></span> <br><br>
 
-    <label for="passwordField">Password:</label>
-    <input type="password" id="passwordField" name="passwordField" onchange="hash()"> <span class="error"> * <?php echo $pwdErr; ?></span> <br><br>
+    <label for="password">Password:</label>
+    <input type="password" id="password" name="password""> <span class="error"> * <?php echo $pwdErr; ?></span> <br><br>
 
     <label for="name">Name:</label><br>
 	<input type="text" id="name" name="name" value="<?php echo $name; ?>"> <span class = "error"> * <?php echo $nameErr; ?></span><br><br>	
    
 	<label for="image">Profile Pic: </label>
-	<input type="file" id="image" name="image" class="button" onchange="previewImg()"> <span class="error"> <?php echo $pfpErr; ?></span> <br>
-	<img id="preview"><br><br>
-	<div id="agreementDiv">
-		<input type="checkbox" id="agreement" name="agreement" checked> 
+	<input type="file" id="image" name="image" class="button" onchange="setSrc(200)"> <span class="error"> <?php echo $pfpErr; ?></span> <br>
+	<img id="imgSrc">
+	<canvas id="preview" width="220" height="220"></canvas><br><br>
 	
-    	<label for="agreement">I give RamBook non-exclusive, transferable, sub-licensable, royalty-free, worldwide license to use this photo.</label>
-		<span class = "error"> * <?php echo $agreeErr; ?> </span> <br><br>
-
-	</div>
-    
+    <input type="checkbox" id="agreement" name="agreement" <?php if ($agreement != "") echo "checked"; ?>> 
+	
+    <label for="agreement">I give RamBook non-exclusive, transferable, sub-licensable, royalty-free, worldwide license to use this photo.</label>
+	<span class = "error"> * <?php echo $agreeErr; ?> </span> <br><br>
 	
     Connection to Mount Doug: <span class="error"> * <?php echo $connErr; ?></span> <br>
 	<div id="fullConnMenu">
@@ -55,6 +53,5 @@
 	<textarea id="desc" name="desc" rows="4" cols="50"><?php echo $desc; ?></textarea>
 	<br>
 	<br>
-	<input type=submit value="Submit!" name="signup" class="button" id="signupSubmit">
-	<input type="hidden" id="password" name="password" value="">
+	<input type=submit value="Submit!" name="signup" class="button" id="signupSubmit" onclick="hash()">
 </form>

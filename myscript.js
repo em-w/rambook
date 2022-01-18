@@ -1,24 +1,47 @@
+//Variables
+let previewImg = document.getElementById("imgSrc");//image preview obj
+let size = 0; //stores size of preview
+
 function showGradeMenu() {
-	let x = document.getElementById("gradeMenu");
+	var x = document.getElementById("gradeMenu");
 	x.style.display = "block";
 }
 
 function hideGradeMenu() {
-	let x = document.getElementById("gradeMenu");
+	var x = document.getElementById("gradeMenu");
 	x.style.display = "none";
 }
 
 function showChosenGrade() {
-	let student = document.getElementById("student");
+	var student = document.getElementById("student");
 	if (student.checked) {
 		showGradeMenu();
 	}
 }
 
-function showAgreement() {
-	let x = document.getElementById("agreementDiv");
-	x.style.display = "block";
-	document.getElementById("agreement").checked = false;
+//onload of image preview crop and resize it
+previewImg.onload = function () {
+	console.log(size);
+	//Getting the area of the crop
+	let width = previewImg.width;
+	let height = previewImg.height;
+	let ratio = (previewImg.width / previewImg.height);
+	let startX = 0;
+	let startY = 0;
+	
+	if (ratio >= 1) {
+		let thumbRatio = previewImg.height / size;
+		startX = (previewImg.width - (thumbRatio * size)) / 2;
+		width = (thumbRatio * size);
+		console.log("x" + startX);
+	}else {
+		let thumbRatio = previewImg.width / size;
+		startY = (previewImg.height - (thumbRatio * size)) / 2;
+		height = (thumbRatio * size);
+		console.log("y" + startY);
+	}
+	document.getElementById("preview").getContext("2d").drawImage(previewImg, startX, startY, width, height, 10, 10, size, size);
+	console.log(previewImg + " " + startX + " " + startY + " " + width + " " + height  + " " + size);
 }
 
 window.onload = function() {
@@ -34,18 +57,16 @@ window.onload = function (){
 
 //onchange hash
 function hash() {
-	console.log(document.getElementById("passwordField").value);
-	document.getElementById("password").value = md5(document.getElementById("passwordField").value);
-	console.log(document.getElementById("password").value);
+	document.getElementById("password").value = md5(document.getElementById("password").value);
 }
 
-//Onchange of upload, get temp url and create an image
-function previewImg () {
-	showAgreement();
-	const [imgFile] = document.getElementById("image").files;
-	console.log(imgFile);
+//Onchange of upload, get DOMSTRING and set src of hidden img
+//num is the width and height of the preview
+function setSrc (num) {
+	const imgFile = document.getElementById("image").files;
 	if (imgFile) {
-		document.getElementById("preview").src = createObjectURL(imgFile[0]);//<?php precreate(imgFile, 500, 500);?>;
+		size = num;
+		previewImg.src = (URL.createObjectURL(imgFile[0]));
 	}
 }
 
@@ -138,7 +159,6 @@ function sortByUID() {
 	}
 }
 
-
 // load all posts or users's posts only
 function loadImages(access, isPost){
 	console.log(isPost);
@@ -149,47 +169,64 @@ function loadImages(access, isPost){
 	} else {
 		thumbFolder = "pfpthumbs/";
 	}
-    fetch("./readjson.php?access=" + access).
-    then(function(resp){ 
-      return resp.json();
-    })
-    .then(function(data){
-      console.log(data); 
-	  let followingArray = [];
+	fetch("./readjson.php?access=" + access).
+	then(function(resp){ 
+	  return resp.json();
+	})
+	.then(function(data){
+	  console.log(data); 
 	  
 	  // everything beyond this point can be turned into a method probably
-      let i;  // counter     
-	  let j; // other counter
-      let main = document.getElementById("main");
-      // remove all existing children of main
-      while (main.firstChild) {
-        main.removeChild(main.firstChild);
-      }
-     
-	  // sort contents of data by uid
-	  if (data != null) {
-		data.sort(sortByUID());
-	 
-	  	
-		
-		//get following list
-		if (!isPost) {
-			for (j in data) { // fix me :(
-			console.log(data[j].current);
-				if (data[j].current) {
-					followingArray = data[j].following;
-					console.log(followingArray); // come back
-					data.splice(j, 1);
-					
-					break;
-				}				
+	  let i;  // counter     
+	  let main = document.getElementById("main");
+	  
+		  // remove all existing children of main
+		  while (main.firstChild) {
+			main.removeChild(main.firstChild);
+		  }
+		 
+		  // sort contents of data by uid
+		  if (data != null) {
+			data.sort(sortByUID());
+		 
+			// save data into global array
+			jsondata = data;
+
+			// for every image, create a new image object and add to main
+			for (i in data){
+				let img = new Image();
+				let card = document.createElement('div');
+				card.className = "card";
+				if (isPost) {
+					card.setAttribute("onclick", "displayLightBox('alt', '" + data[i].uid + "." + data[i].imagetype + "')");	
+				}
+				console.log(data[i].uid + "." + data[i].imagetype);
+				img.src = thumbFolder + data[i].uid + "." + data[i].imagetype;
+				img.alt = data[i].desc;
+				img.className = "thumb";
+				main.appendChild(card).appendChild(img);
+				if (!isPost) {
+					let followform = document.createElement('form');
+					followform.method = "post";
+					followform.setAttribute("onsubmit", "loadImages('allpfs', false)");
+					let follow = document.createElement('input');
+					follow.type = "image";
+					follow.src = "images/follow.png";
+					follow.alt = "follow button";
+					follow.className = "follow";
+					let userToFollow = document.createElement('input');
+					userToFollow.type = "hidden";
+					userToFollow.name = "userToFollow";
+					userToFollow.value = data[i].uid;
+					card.appendChild(followform).appendChild(follow);
+					followform.appendChild(userToFollow);
+
+				}
 			}
-		}
-		
-		console.log(followingArray); // come back
-		
-		// save data into global array
-	  	jsondata = data;
+
+		  }
+		  
+		});
 
       	// for every image, create a new image object and add to main
       	for (i in data){
@@ -205,32 +242,20 @@ function loadImages(access, isPost){
 		img.className = "thumb";
         main.appendChild(card).appendChild(img);
 		if (!isPost) {
-			
 			let followform = document.createElement('form');
 			followform.method = "post";
 			followform.setAttribute("onsubmit", "loadImages('allpfs', false)");
 			let follow = document.createElement('input');
 			follow.type = "image";
+			follow.src = "images/follow.png";
+			follow.alt = "follow button";
 			follow.className = "follow";
 			let userToFollow = document.createElement('input');
 			userToFollow.type = "hidden";
+			userToFollow.name = "userToFollow";
 			userToFollow.value = data[i].uid;
 			card.appendChild(followform).appendChild(follow);
 			followform.appendChild(userToFollow);
-			console.log(followingArray); // come back
-				if (followingArray.includes(data[i].uid)) {
-					follow.src = "images/unfollow.png";
-					follow.alt = "unfollow button";
-					userToFollow.name = "userToUnfollow";
-				
-				}
-			 else {
-				follow.src = "images/follow.png";
-				follow.alt = "follow button";
-				userToFollow.name = "userToFollow";
-				
-			}
-			
 			
 			let username = document.createElement('a');
 			let usernameText = document.createTextNode(data[i].username);
@@ -238,26 +263,10 @@ function loadImages(access, isPost){
 			username.appendChild(usernameText);
 			
 			card.appendChild(username);
+      
 
-		}
 
-      }
-	  }
-	  
-    });
 } // loadImages
-
-// return the provided session variable FIX ME
-function getSessionVariable(variable) {
-	fetch("./getsessionvariables.php?var=" + variable).
-    then(function(resp){
-        return resp.json;
-    }).
-	then(function(data) {
-		console.log(data);
-		console.log("sdhfjkdskf");
-		return data;	});
-}
 
 // display the next image (of images currently displayed) in the lightbox
 function goToNextImage(direction) {
@@ -368,4 +377,4 @@ function searchProfiles(term) {
 
 }
 
-
+}}

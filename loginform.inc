@@ -5,11 +5,8 @@
     <input type="text" id="username" name="username">
 
     <label for="password">Password:</label>
-    <input type="password" id="passwordField" name="passwordField" onchange="hash()">
+    <input type="password" id="password" name="password" ">
 
-    <input type="hidden" id="password" name="password" value="">
-
-    <input type="submit" class="button" name="login" value="login">
-
+    <input type="submit" class="button" name="login" value="login" onclick="hash()">
     
 </form>

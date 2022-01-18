@@ -7,6 +7,9 @@ body {
 	background-color: #ffffff;
 }
 
+#imgSrc {
+	display:none;
+}
 
 input[type=text] {
 	width: 50%;
@@ -40,10 +43,6 @@ input[type=text]:hover {
 }
 
 #gradeMenu {
-	display: none;
-}
-
-#agreementDiv {
 	display: none;
 }
 

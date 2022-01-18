@@ -29,12 +29,9 @@ session_start();
 
       else if ($access == "allpfs") {
          foreach ($userarray as $user) {
-            if ($user["uid"] == $_SESSION["userUid"]) {
-               $user["current"] = true;
-            } else {
-				$user["current"] = false;
-			}
+            if ($user["uid"] != $_SESSION["userUid"]) {
                $returnData[] = $user;
+            }
          }
       }
 
