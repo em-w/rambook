@@ -1,3 +1,7 @@
+//Variables
+let previewImg = document.getElementById("imgSrc");//image preview obj
+let size = 0; //stores size of preview
+
 function showGradeMenu() {
 	var x = document.getElementById("gradeMenu");
 	x.style.display = "block";
@@ -19,6 +23,30 @@ window.onload = function() {
 	showChosenGrade();
 };
 
+//onload of image preview crop and resize it
+previewImg.onload = function () {
+	console.log(size);
+	//Getting the area of the crop
+	let width = previewImg.width;
+	let height = previewImg.height;
+	let ratio = (previewImg.width / previewImg.height);
+	let startX = 0;
+	let startY = 0;
+	
+	if (ratio >= 1) {
+		let thumbRatio = previewImg.height / size;
+		startX = (previewImg.width - (thumbRatio * size)) / 2;
+		width = (thumbRatio * size);
+		console.log("x" + startX);
+	}else {
+		let thumbRatio = previewImg.width / size;
+		startY = (previewImg.height - (thumbRatio * size)) / 2;
+		height = (thumbRatio * size);
+		console.log("y" + startY);
+	}
+	document.getElementById("preview").getContext("2d").drawImage(previewImg, startX, startY, width, height, 10, 10, size, size);
+	console.log(previewImg + " " + startX + " " + startY + " " + width + " " + height  + " " + size);
+}
 
 // initialize hidden elements of lightbox
 window.onload = function (){
@@ -28,17 +56,16 @@ window.onload = function (){
 
 //onchange hash
 function hash() {
-	console.log(document.getElementById("passwordField").value);
-	document.getElementById("password").value = md5(document.getElementById("passwordField").value);
-	console.log(document.getElementById("password").value);
+	document.getElementById("password").value = md5(document.getElementById("password").value);
 }
 
 //Onchange of upload, get temp url and create an image
-function previewImg () {
-	const [imgFile] = document.getElementById("image").files;
-	console.log(imgFile);
+//num is the width and height of the preview
+function setSrc (num) {
+	const imgFile = document.getElementById("image").files;
 	if (imgFile) {
-		document.getElementById("preview").src = createObjectURL(imgFile[0]);//<?php precreate(imgFile, 500, 500);?>;
+		size = num;
+		previewImg.src = (URL.createObjectURL(imgFile[0]));
 	}
 }
 
