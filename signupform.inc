@@ -14,11 +14,14 @@
 	<label for="image">Profile Pic: </label>
 	<input type="file" id="image" name="image" class="button" onchange="previewImg()"> <span class="error"> <?php echo $pfpErr; ?></span> <br>
 	<img id="preview"><br><br>
+	<div id="agreementDiv">
+		<input type="checkbox" id="agreement" name="agreement" checked> 
 	
-    <input type="checkbox" id="agreement" name="agreement" <?php if ($agreement != "") echo "checked"; ?>> 
-	
-    <label for="agreement">I give RamBook non-exclusive, transferable, sub-licensable, royalty-free, worldwide license to use this photo.</label>
-	<span class = "error"> * <?php echo $agreeErr; ?> </span> <br><br>
+    	<label for="agreement">I give RamBook non-exclusive, transferable, sub-licensable, royalty-free, worldwide license to use this photo.</label>
+		<span class = "error"> * <?php echo $agreeErr; ?> </span> <br><br>
+
+	</div>
+    
 	
     Connection to Mount Doug: <span class="error"> * <?php echo $connErr; ?></span> <br>
 	<div id="fullConnMenu">
