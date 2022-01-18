@@ -14,5 +14,10 @@
 	<textarea id="desc" name="desc" rows="4" cols="50"><?php echo $desc; ?></textarea>
 	<br>
 	<br>
+	
+	<label for="tags">Tags (please separate all tags with commas!): </label> <span class="error"> <?php echo $tagsErr; ?></span> <br>
+	<textarea id="tags" name="tags" rows="2" cols="50"><?php echo $tagstring; ?></textarea>
+	<br>
+	<br>
 	<input type=submit value="Post!" name="form" class="button">
 </form>

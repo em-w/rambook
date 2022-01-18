@@ -13,23 +13,29 @@
     $searchterms = ""; 
    }
  
-  // pull student, alumnus or staff only or return all
   $returnData = [];
   if ($searchterms != "") { 
     foreach($phparray as $entry) {
-        foreach($searchterms as $term) {
-            if (str_contains($entry["name"], $term)) {
-                $returnData[] = $entry;
-                break;
-            } else if (str_contains($entry["desc"], $term)) {
-                $returnData[] = $entry;
-                break;
-            }
-        } 
+		$userfile = $entry["uid"] . ".json";
+		$userstring = file_get_contents($userfile);
+		$posts = json_decode($userstring, true);
+		
+		if(isset($posts)) {
+			foreach ($posts as $post) {
+				foreach($searchterms as $term) {
+					if (in_array($term, $post["tags"])) {
+						$returnData[] = $post;
+						break;
+					}
+				} 
+			
+			}
+		}	
+        
     } // if 
   } else {
-      // return all profiles if get array is not properly set because I'm not sure what else to do...?
-     $returnData = $phparray;
+      // return an empty array?
+     $returnData = array();
   }
 
 // encode the php array to json 
