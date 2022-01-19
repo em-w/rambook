@@ -41,7 +41,6 @@ $credentials = [
 				echo "<pre>";
 				var_dump($_POST);
 				echo "</pre>";
-				
 
 
 				foreach ($userprofiles as $user) {
@@ -73,6 +72,8 @@ $credentials = [
 					$error = true;
 				}
 			}
+			
+			$signupform = new DOMDocument();
 			
 			if (empty($_POST["agreement"])) {
 				$agreeErr = "Please check.";
@@ -241,9 +242,10 @@ $credentials = [
 		// if follow button is pressed
 		} else if (isset($_POST["userToFollow"])) {
 			follow($_POST["userToFollow"]);
-		}else if (isset($_POST["postToLike"])) { // if like button is pressed
+		} else if (isset($_POST["userToUnfollow"])) {
+			unfollow($_POST["userToUnfollow"]);
+		} else if(isset($_POST["postToLike"])){
 			like($_POST["postToLike"]);
-			echo "like function called";
 		}
 	} // if
 	
@@ -338,7 +340,6 @@ $credentials = [
 		} // else
 		
 		if (isset($_GET["action"]) && $_GET["action"] == "del") {
-			echo "TOOOOOTT";
 			if (file_exists($file)) {
 				$jsonstring = file_get_contents($file);
 				
@@ -422,23 +423,36 @@ $credentials = [
 
 			$userprofiles = json_decode($jsonstring, true);
 		}
-
-		/*if (!isset($userprofiles[$_SESSION["userUid"]-1]["following"])) {
-			$userprofiles[$_SESSION["userUid"]-1]["following"][] = $target;
-		} else */
 		
 		if (!in_array($target, $userprofiles[$_SESSION["userUid"]-1]["following"])) {
 			$userprofiles[$_SESSION["userUid"]-1]["following"][] = $target;
 			
 		}
 
-		//add info to array
-
 		//encode back into file
 		$jsoncode = json_encode($userprofiles, JSON_PRETTY_PRINT);
 		file_put_contents($file, $jsoncode);
 		
 	} // follow
+	
+	function unfollow($target) {
+		$file = "userprofiles.json";
+		
+		if(file_exists($file)){
+			$jsonstring=file_get_contents($file);
+
+			$userprofiles = json_decode($jsonstring, true);
+		}
+			
+		$key = array_search($target, $userprofiles[$_SESSION["userUid"]-1]["following"]);
+		
+		unset($userprofiles[$_SESSION["userUid"]-1]["following"][$key]);
+		
+
+		//encode back into file
+		$jsoncode = json_encode($userprofiles, JSON_PRETTY_PRINT);
+		file_put_contents($file, $jsoncode);
+	}
 	
 	function like($targetPost){
 	
@@ -490,7 +504,57 @@ $credentials = [
 		file_put_contents($file, $jsoncode);
 		
 	} // like
+
+	function unlike($targetPost){
 	
+		$file = "userprofiles.json";
+		
+		//decode json string into php array
+		if(file_exists($file)){
+			$jsonstring = file_get_contents($file);
+
+			$userprofiles = json_decode($jsonstring, true);
+		} // if
+	
+		// check if targetpost is in array of liked posts
+		if(in_array($targetPost, $userprofiles[$_SESSION["userUid"]-1]["likedPosts"])){
+			unset($userprofiles[$_SESSION["userUid"]-1]["likedPosts"][$targetPost]);// update array of user's liked posts
+		}
+		
+		// update array of post's liked by
+		$x = 1; // counter
+
+		// runs through all user's post jsons to find target post
+		while(file_exists("$x.json")){
+
+			// decode user's post json
+			if(file_exists("$x.json")){
+				$jsonstring = file_get_contents("$x.json");
+				$userposts = json_decode($jsonstring, true);
+			} // if
+
+			for($x = 0; $x < sizeof($userposts); $x ++){
+			
+				if($userposts[$x]["uid"] == $targetPost){
+					if(in_array($_SESSION["userUid"], $userposts[$x]["likedBy"])){
+						unset($userposts[$x]["likedBy"][$_SESSION["userUid"]]);
+					} // if
+				} // if
+			} // for loop
+			 
+			//encode user's post json
+			$jsoncode = json_encode($userposts, JSON_PRETTY_PRINT);
+			file_put_contents("$x.json", $jsoncode);
+			
+			$x ++; // update counter
+
+		} // while loop
+
+		// encode user profiles into json
+		$jsoncode = json_encode($userprofiles, JSON_PRETTY_PRINT);
+		file_put_contents($file, $jsoncode);
+		
+	} // like
 	
 	function upload_pfp($targetDir, $targetFile, $isUploaded) {
 		// if targetDir doesn't exist, create it

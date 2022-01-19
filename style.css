@@ -43,6 +43,10 @@ input[type=text]:hover {
 	display: none;
 }
 
+#agreementDiv {
+	display: none;
+}
+
 textarea {
 	width:50%;
 	height: 200px;
